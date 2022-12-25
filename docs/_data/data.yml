@@ -1,0 +1,108 @@
+name: Shahram Nikbakhtian
+support_dark_mode: true
+fork: true
+
+# Sidebar
+contact:
+  email: nikbakhtian@gmail.com
+  github: shahnikba
+  linkedin: shahram
+  phone: 
+  gitlab: 
+  twitter: 
+
+languages:
+  - idiom: English
+  - idiom: French
+  - idiom: Persian
+
+education:
+  - degree: MSc in Applied MAthematics
+    time: 2000-2004
+    university: Ecole Polytechnique
+
+  - degree: BSc in Electrical Enginnering
+    time: 1996-2000
+    university: Sharif University
+
+skills:
+  - category: Backend
+    skill: 
+      - Go
+      - Rust
+  - category: Frontend
+    skill:
+      - React
+      - Typescript
+  - category: DevOps
+    skill:
+      - Docker
+      - Kubernetes 
+
+# Profile
+profile: |
+  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod 
+  tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, 
+  quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. 
+  Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu 
+  fugiat nulla pariatur.
+
+# Experience
+experience:
+  - role: AI Lead
+    time: 2018-Present
+    company: Huma(Medopad)
+    details: |
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod 
+      tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, 
+      quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. 
+      Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu 
+      fugiat nulla pariatur.
+    technologies_used: | 
+      Python, C, C++, Objective C, Java
+  
+  - role: Researcher
+    time: 2015-2018
+    company: Bank of America
+    details: |
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod 
+      tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, 
+      quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. 
+      Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu 
+      fugiat nulla pariatur.
+    technologies_used: | 
+      Python, Tensorflow, Keras, Matlab
+
+publications:
+  - title: Random title of paper. An interesting one.
+    link: "#"
+    authors: Nikbakhtian Shahram
+    conference: Some conference, 2021
+
+  - title: Second title of paper. An interesting one too.
+    link: "#"
+    authors: John E. Doe
+    conference: Some conference again, 2018
+
+projects:
+  - title: Cool Project 
+    link: #
+    details: |
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod 
+      tempor incididunt ut labore et dolore magna aliqua.
+
+  - title: Cool Project 
+    link: #
+    details: |
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod 
+      tempor incididunt ut labore et dolore magna aliqua.
+
+# Volunteering
+volunteering:
+  - time: 2020-Present
+    role: PR Manager
+    company: Some random organization
+    details: |
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod 
+      tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, 
+      quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. 
