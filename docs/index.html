@@ -3,23 +3,21 @@ layout: "default"
 author: "INDEX Author"
 ---
 
-<h1>To Whom It May Concern</h1>
-<ul>
-{% for post in site.posts %}
-<li><a href="{{ post.url }}">{{ post.title }}</a></li>
-{% endfor %}
-</ul>
-My two cents tips would be:
-<ol><li>  Do not give up! What is not understood might be explained later.
-</li><li> Do not mess with GitHub Page until the end of this tutorial.
-</li><li> This is a Jekyll tutorial. 
-          It will not cover in details the problems of installing 
-          Jekyll, Gems, Bundler, mismatched Versions, and sometimes... 
-          antivirus interference!
-</li><li> Neither will it cover the problems of minima theme on GitHub Page.
+<h1>Welcome to my webpage!</h1>
+
+My 3 main reasons for this personal; blog and website:
+<ol><li>  Practice my writing skills, in general I think more than I do, and I write much less about what I do.
+</li><li> Gather all my notes and project in one place to be able to share it with friends and even for myself being able to have access to my notes from anywhere is great.
+</li><li> Share my professional experience with a larger group of people.
 </li></ol>
 Last, it is a <b>free</b> tutorial using <b>free</b> software. 
 <b>BUT</b>, you will need a lot of <b>FREE</b> time! 
+<ul>
+    {% for post in site.posts %}
+    <li><a href="{{ post.url }}">{{ post.title }}</a></li>
+    {% endfor %}
+    </ul>
+
 <br>
 <br><br>
 <h2>{{ site.author }}</h2>
