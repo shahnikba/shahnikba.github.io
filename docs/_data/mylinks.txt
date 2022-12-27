@@ -57,5 +57,16 @@ https://raoumer.github.io/blog_posts/deep_learning_resources.html
 file:///C:/Users/adria/Downloads/math-deep.pdf
 
 
+https://www.andrew.cmu.edu/user/feif/17759F21/20210830_Lec1_Introduction.pdf
+https://proceedings.neurips.cc/paper/2018/file/90365351ccc7437a1309dc64e4db32a3-Paper.pdf
+https://haithambouammar71.wixsite.com/haithamsite/post/reinforcement-learning-as-probabilistic-modelling-a-variational-inference-formulation-part-ii-wip
+https://haithambouammar71.wixsite.com/haithamsite/post/reinforcement-learning-as-probabilistic-modelling-a-variational-inference-formulation
+https://www.youtube.com/watch?v=q3zHYfaKg4k&t=1970s
+https://www.youtube.com/watch?v=n65pElMp6x8&t=694s
+
+https://web.stanford.edu/class/cs224n/index.html#coursework
+
+
+
 
 
