@@ -52,7 +52,7 @@
                   <h4>Recent Posts:</h4>
                 </a>
                 <ul>
-                  {% for i in (1..site.recent_posts) %}
+                  {% for i in (0..site.recent_posts) %}
                      {% assign post = site.posts[i] %}
                   <li>
                     <a href="{{ post.url | prepend: site.baseurl  }}">{{ post.title }}</a>

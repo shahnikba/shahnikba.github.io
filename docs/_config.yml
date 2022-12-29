@@ -20,6 +20,8 @@ toolbar_priority:        # Order of the items in the toolbar (except for blog an
   - About
   - Projects
 
+recent_posts: 10
+
 # Collections
 collections:
   dropdown:

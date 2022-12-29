@@ -5,5 +5,4 @@ gem "minima"
 gem "jekyll-theme-hacker"
 gem "jekyll-feed"
 gem "tzinfo-data"
-gem "webrick", "~> 1.7"
-
+gem "webrick"

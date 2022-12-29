@@ -259,7 +259,7 @@ DEPENDENCIES
   jekyll-theme-hacker
   minima
   tzinfo-data
-  webrick (~> 1.7)
+  webrick
 
 BUNDLED WITH
    2.4.1
