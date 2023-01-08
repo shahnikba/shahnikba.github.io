@@ -1,0 +1,28 @@
+---
+---
+
+<!DOCTYPE html>
+<html>
+{% include head.html %}
+
+<body class="animated fadeIn">
+  <div class="container">
+
+    <section class="header">
+      {% include header.html %}
+    </section>
+    <section class="content">
+      <link rel="stylesheet" id="css-theme" href="{{ '/assets/css/styleR' | append: '.css' | prepend: site.baseurl }}">
+      <div class="page-separator hidden-xs">
+        <h1 class="h1-strip" style="padding-bottom:2em; margin-bottom: 0;"></h1>
+      </div>
+          {{ content }}
+    </section>
+    <section class="footer">
+      {% include footer.html %}
+    </section>
+  </div>
+</body>
+
+</html>
+ <!--   {% include analytics.html %} -->
