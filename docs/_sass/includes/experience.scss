@@ -21,5 +21,8 @@
         .technologies {
             @include body-text;
         }
+        .extra {
+            @include body-text;
+        }
     }
 }

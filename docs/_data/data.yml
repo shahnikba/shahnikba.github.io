@@ -6,7 +6,7 @@ fork: false
 contact:
   email: nikbakhtian@gmail.com
   github: shahnikba
-  linkedin: shahram
+  linkedin: shahram-nikbakhtian-3920661a
   phone: 
   gitlab: 
   twitter: 
@@ -28,16 +28,22 @@ education:
 skills:
   - category: Backend
     skill: 
-      - Go
-      - Rust
+      - C/C++
+      - Python, R
+      - C#, Java 
   - category: Frontend
     skill:
-      - React
-      - Typescript
+      - Objective C
+      - Java
   - category: DevOps
     skill:
       - Docker
-      - Kubernetes 
+      - Kubernetes
+  - category: Familair
+    skill: 
+      - OCaml, F#, Haskell
+      - Go, Rust
+      - Cuda
 
 # Profile
 profile: |
@@ -53,50 +59,96 @@ experience:
     time: 2018-Present
     company: Huma(Medopad)
     details: |
-      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod 
-      tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, 
-      quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. 
-      Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu 
-      fugiat nulla pariatur.
+      Motion sensor analysis to predict risk of fall for elderly people.<br>
+      Measuring and monitoring activity and sleep pattern. I published a paper that to my full surprise it attracted a massive media cover.<br> 
+      Measuring Heart Rate using camera's of smartphones <br> 
+      Measuring Breathing Rate using camera. <br> 
+      Image analysis applied to wound assessment
+      The ability to monitor patients and prevent patient emergencies before they occur, by analysing data for key indicators
+      To deliver the above projects, we are using deep learning techniques deep convolutional neural networks and  sophisticated machine learning technique plus signal processing. For instance we have to find face landmark, eye gaze, etc that one needs sophisticated techniques plus a proper infrastructure, pipeline as the data size is big.
     technologies_used: | 
-      Python, C, C++, Objective C, Java
-  
-  - role: Researcher
-    time: 2015-2018
-    company: Bank of America
+      Python, C++, Objective C, Swift, Kotilin and Java
+
+  - role: Founder
+    time: 2021-2022
+    company: Ainemox
     details: |
-      BNP PARIBAS
+      Fully automatic market making trading system. Trade over 1B$ in Crypto Exchanges.
+      Developed in C++, and with zero external library or package, even market connection, web sockets.
+      Not a registered company.
     technologies_used: | 
-      Python, Tensorflow, Keras, Matlab
+      C, C++, Python C, AWS Cloud
+    extra: https://mypersonalwebpage.herokuapp.com/market-making
+  
+  - role: Quant Algo, Model Validation
+    time: September 2015-May 2018
+    company: Bank of America Merrill Lynch
+    details: |
+      Responsible of model validation for algo trading
+      Cross asset including eFX trading, Fixed income and Equities
+    technologies_used: | 
+      Python, Java, C++, Kdb, Latex
 
-
-  - role: Researcher
-    time: 2005-2015
+  - role: FX Algorithmic Quant Trader
+    time: Dec 2011-Aug 2015
     company: BNP PARIBAS
     details: |
-      Variety of roles
+      Research and development of high frequency strategies for the FX AMM desk.
+      Research and development of alpha strategies relating to flow.
+      Price discovery using all the information at hand. Enhancing risk management algorithms with online calibration of parameters.
     technologies_used: | 
       C, C++, R, Python, C#
+
+  - role: Quant, Credit Arbitrage
+    time: Dec 2010-Dec 2011
+    company: BNP PARIBAS
+    details: |
+      Research of statistical arbitrage of cross-asse.
+      Focus upon searching combinations of co-integrated assets. Pair trading
+    technologies_used: | 
+      R, Excel
+
+  - role: Quant, FX Prop Trading
+    time: Mar 2009-Dec 2010
+    company: BNP PARIBAS
+    details: |
+      Research of statistical arbitrage of cross-asse.
+      Research of arbitrage on the smile of cross FX
+    technologies_used: | 
+      C++,R, Excel
+
+
+  - role: Quant, Interest Rate Exotics and FX Hybrids
+    time: Jul 2005-Mar 2009
+    company: BNP PARIBAS
+    details: |
+      Cross smile modelling for Hybrid FX products
+      Research of arbitrage on the smile of cross FX
+      The company’s main model is LGMSV 3F, which is the most expensive pricer. A gain in speed was critical. At first, I tried to amend the Monte Carlo using different methods but I felt that I could only achieve a maximum improvement of 20%. Then after realizing that I could use GPU, I re-implemented the Monte Carlo and achieved speeds of up to 6 times faster. I applied the same approach to the calibration procedure. I believe that we can go further and have a pricer that is 10 times faster.
+      SLV model for long-term-FX. In this model  the domestic rate and foreign rate are both stochastic with one factor and FX has a volatility which is a mixture of local vol and stochastic vol. I applied a completely different numerical method that reduce the calibration time by a factor of 5 to 7.
+      I worked on the calibration of HLV model (max 20s to calibrate 30 years) in which the FX has a volatility that is a mixture of Heston and Local vol, with deterministic rates. I implemented a hybrid model, where the rate could be stochastic and the FX or asset has pure local vol.}
+    technologies_used: | 
+      C++,Cuda, Excel
       
 publications:
-  - title: Random title of paper. An interesting one.
-    link: "#"
+  - title: Accelerometer-derived sleep onset timing and cardiovascular disease incidence a UK Biobank cohort study
+    link: "https://academic.oup.com/ehjdh/article/2/4/658/6423198"
     authors: Nikbakhtian Shahram
-    conference: Some conference, 2021
-
+    conference: European Journal of Heart, 2021
+    
   - title: Second title of paper. An interesting one too.
     link: "#"
     authors: John E. Doe
     conference: Some conference again, 2018
 
 projects:
-  - title: Cool Project 
+  - title: OCR Persian
     link: #
     details: |
       Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod 
       tempor incididunt ut labore et dolore magna aliqua.
 
-  - title: Cool Project 
+  - title: Blood Pressure measurement
     link: #
     details: |
       Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod 
@@ -104,10 +156,8 @@ projects:
 
 # Volunteering
 volunteering:
-  - time: 2020-Present
-    role: PR Manager
-    company: Some random organization
+  - time: 2016-2017
+    role: Worker
+    company: BAML
     details: |
-      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod 
-      tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, 
-      quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. 
+      Bulding a playground for children

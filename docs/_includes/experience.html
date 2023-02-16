@@ -12,7 +12,11 @@
                 <span class="time">{{exp.time}}</span>
             </div> 
             <div class="details">{{exp.details}}</div>
+            {% if exp.extra %}
+            <a class="extra" href={{exp.extra}}  target="_blank">Read more!</a>
+            {% endif %}
             <p class="technologies">Technologies Used: {{exp.technologies_used}}</p>
+            
         </div>
        
     {% endfor %}
