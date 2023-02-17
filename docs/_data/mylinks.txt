@@ -1,3 +1,18 @@
+
+      The company’s main model is LGMSV 3F, which is the most expensive pricer. A gain in speed was critical. At first, I tried to amend the Monte Carlo using different methods 
+      but I felt that I could only achieve a maximum improvement of 20%. Then after realizing that I could use GPU, I re-implemented the Monte Carlo and achieved speeds of up to 6 times faster.
+      I applied the same approach to the calibration procedure. I believe that we can go further and have a pricer that is 10 times faster.
+
+
+
+
+      SLV model for long-term-FX. In this model  the domestic rate and foreign rate are both stochastic with one factor and FX has a volatility which is a mixture of local vol and stochastic vol. 
+      I applied a completely different numerical method that reduce the calibration time by a factor of 5 to 7.
+      I worked on the calibration of HLV model (max 20s to calibrate 30 years) in which the FX has a volatility that is a mixture of Heston and Local vol, with deterministic rates. 
+      I implemented a hybrid model, where the rate could be stochastic and the FX or asset has pure local vol.}
+
+
+
 https://myika.medium.com/the-daily-routine-of-an-algorithmic-trader-48c35d2facaa
 https://www.quora.com/What-do-algorithmic-traders-do-during-the-day
 https://royalsociety.org/blog/2021/03/day-in-the-life-carola-bibiane-schonlieb/

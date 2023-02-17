@@ -47,11 +47,18 @@ skills:
 
 # Profile
 profile: |
-  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod 
-  tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, 
-  quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. 
-  Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu 
-  fugiat nulla pariatur.
+  Before joining Medopad I was their advisor for Artificial Intelligence and Machine Learning to be applied in Healthcare. I joined Huma to build their research and development team that delivers quantitative
+  tools and functionalities to help monitor patients remotely. My first focus is using advances Machine
+  Learning and Artificial techniques to find signals that can help diagnose earlier the deterioration of the
+  patient. Please check in academic achievements. Prior to Huma , I worked at BAML, where I not
+  only helped to validate the algorithmic models of trading in the entire business, but I also helped them
+  to build a ML (Machine Learning Model) for execution business. The rest of my career I worked for
+  BNP and I covered different business in Fixed Income Department, I started as hybrid interest rate
+  quant and then I developed quantitative trading strategy for Credit Prop desk (the most successful
+  trading desk of BNP) because of Volcker Rule those activities were closed and ultimately I worked
+  as a Quantitative FX high frequency market maker. I was responsible for automated pricing (mid
+  discovery and prediction) and auto-hedging algorithms. My focus was on trading signal generation,
+  market micro-structure, auto-hedging, pricing engines, market making and hedging strategies.My healthcare experience is purely AI and engineering.
 
 # Experience
 experience:
@@ -63,11 +70,15 @@ experience:
       Measuring and monitoring activity and sleep pattern. I published a paper that to my full surprise it attracted a massive media cover.<br> 
       Measuring Heart Rate using camera's of smartphones <br> 
       Measuring Breathing Rate using camera. <br> 
-      Image analysis applied to wound assessment
-      The ability to monitor patients and prevent patient emergencies before they occur, by analysing data for key indicators
-      To deliver the above projects, we are using deep learning techniques deep convolutional neural networks and  sophisticated machine learning technique plus signal processing. For instance we have to find face landmark, eye gaze, etc that one needs sophisticated techniques plus a proper infrastructure, pipeline as the data size is big.
+      Image analysis applied to wound assessment <br>
+      The ability to monitor patients and prevent patient emergencies before they occur, by analysing data for key indicators <br>
+      To deliver the above projects, we are using deep learning techniques deep convolutional neural networks and <br>  
+      sophisticated machine learning technique plus signal processing. <br>
+      For instance we have to find face landmark, eye gaze, etc that one needs sophisticated techniques plus a proper infrastructure, pipeline as the data size is big. 
     technologies_used: | 
       Python, C++, Objective C, Swift, Kotilin and Java
+    extra: https://mypersonalwebpage.herokuapp.com/pure-ai-ml
+    
 
   - role: Founder
     time: 2021-2022
@@ -93,8 +104,8 @@ experience:
     time: Dec 2011-Aug 2015
     company: BNP PARIBAS
     details: |
-      Research and development of high frequency strategies for the FX AMM desk.
-      Research and development of alpha strategies relating to flow.
+      Research and development of high frequency strategies for the FX AMM desk. <br>
+      Research and development of alpha strategies relating to flow. <br>
       Price discovery using all the information at hand. Enhancing risk management algorithms with online calibration of parameters.
     technologies_used: | 
       C, C++, R, Python, C#
@@ -103,8 +114,8 @@ experience:
     time: Dec 2010-Dec 2011
     company: BNP PARIBAS
     details: |
-      Research of statistical arbitrage of cross-asse.
-      Focus upon searching combinations of co-integrated assets. Pair trading
+      Research of statistical arbitrage of cross-asset. <br>
+      Focus upon searching combinations of co-integrated assets. Pair trading <br>
     technologies_used: | 
       R, Excel
 
@@ -112,8 +123,8 @@ experience:
     time: Mar 2009-Dec 2010
     company: BNP PARIBAS
     details: |
-      Research of statistical arbitrage of cross-asse.
-      Research of arbitrage on the smile of cross FX
+      Research of statistical arbitrage of cross-asse. <br>
+      Research of arbitrage on the smile of cross FX <br>
     technologies_used: | 
       C++,R, Excel
 
@@ -122,11 +133,10 @@ experience:
     time: Jul 2005-Mar 2009
     company: BNP PARIBAS
     details: |
-      Cross smile modelling for Hybrid FX products
-      Research of arbitrage on the smile of cross FX
-      The company’s main model is LGMSV 3F, which is the most expensive pricer. A gain in speed was critical. At first, I tried to amend the Monte Carlo using different methods but I felt that I could only achieve a maximum improvement of 20%. Then after realizing that I could use GPU, I re-implemented the Monte Carlo and achieved speeds of up to 6 times faster. I applied the same approach to the calibration procedure. I believe that we can go further and have a pricer that is 10 times faster.
-      SLV model for long-term-FX. In this model  the domestic rate and foreign rate are both stochastic with one factor and FX has a volatility which is a mixture of local vol and stochastic vol. I applied a completely different numerical method that reduce the calibration time by a factor of 5 to 7.
-      I worked on the calibration of HLV model (max 20s to calibrate 30 years) in which the FX has a volatility that is a mixture of Heston and Local vol, with deterministic rates. I implemented a hybrid model, where the rate could be stochastic and the FX or asset has pure local vol.}
+      Cross smile modelling for Hybrid FX products <br>
+      Research of arbitrage on the smile of cross FX <br>
+      Implemenet the hybrid interest rate model in CUDA GPU.  The first person to do that in whole finance industry (2008) when most people have never heard og GPU or NVIDIA <br>
+      Implemenet the hybrid interest rate model/Forex, a model witth mixutre of local volatity and stiochatic volatality.
     technologies_used: | 
       C++,Cuda, Excel
       
