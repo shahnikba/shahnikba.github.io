@@ -76,7 +76,7 @@ experience:
       sophisticated machine learning technique plus signal processing. <br>
       For instance we have to find face landmark, eye gaze, etc that one needs sophisticated techniques plus a proper infrastructure, pipeline as the data size is big. 
     technologies_used: | 
-      Python, C++, Objective C, Swift, Kotilin and Java
+      TensorFlow, Pytorch, Python, Mobile Development.
     extra: https://mypersonalwebpage.herokuapp.com/pure-ai-ml
     
 
