@@ -17,7 +17,7 @@ languages:
   - idiom: Persian
 
 education:
-  - degree: MSc in Applied MAthematics
+  - degree: MSc in Applied Mathematics
     time: 2000-2004
     university: Ecole Polytechnique
 
@@ -47,37 +47,30 @@ skills:
 
 # Profile
 profile: |
-  Before joining Medopad I was their advisor for Artificial Intelligence and Machine Learning to be applied in Healthcare. I joined Huma to build their research and development team that delivers quantitative
-  tools and functionalities to help monitor patients remotely. My first focus is using advances Machine
-  Learning and Artificial techniques to find signals that can help diagnose earlier the deterioration of the
-  patient. Please check in academic achievements. Prior to Huma , I worked at BAML, where I not
-  only helped to validate the algorithmic models of trading in the entire business, but I also helped them
-  to build a ML (Machine Learning Model) for execution business. The rest of my career I worked for
-  BNP and I covered different business in Fixed Income Department, I started as hybrid interest rate
-  quant and then I developed quantitative trading strategy for Credit Prop desk (the most successful
-  trading desk of BNP) because of Volcker Rule those activities were closed and ultimately I worked
-  as a Quantitative FX high frequency market maker. I was responsible for automated pricing (mid
-  discovery and prediction) and auto-hedging algorithms. My focus was on trading signal generation,
-  market micro-structure, auto-hedging, pricing engines, market making and hedging strategies.My healthcare experience is purely AI and engineering.
-
+  I joined Huma, in the Spring of 2018, to build their research and development team, the goal is to deliver quantitative tools and functionalities 
+  to help monitor patients remotely. My mission is to implement Machine Learning and Artificial Intelligence techniques to find signals that can help 
+  diagnose the deterioration of the patient earlier. Before joining Huma, I worked at BAML, where, with my team, I succeed to validate the algorithmic 
+  models of trading across the entire business and build a Machine Learning Model for the execution business. Before joining BAML, I was at BNP. 
+  I started as a hybrid interest rate quant and then developed a quantitative trading strategy for the Credit Prop desk (BNP's most successful trading desk). 
+  Due to the Volcker Rule, those activities were closed, and I ultimately worked as a quantitative FX high-frequency market maker where 
+  I was responsible for automated pricing (mid-discovery and prediction) and auto-hedging algorithms. My focus was on generating trading signals, 
+  market microstructure, auto-hedging, pricing engines, market making, and hedging strategies.
+  
 # Experience
 experience:
   - role: AI Lead
     time: 2018-Present
     company: Huma(Medopad)
     details: |
-      Motion sensor analysis to predict risk of fall for elderly people.<br>
-      Measuring and monitoring activity and sleep pattern. I published a paper that to my full surprise it attracted a massive media cover.<br> 
+      Causal Machine learning/AI application in Healthcare <br>
+      Motion sensor analysis to predict risk of fall for elderly people <br>
+      Measuring and monitoring activity and sleep pattern <br> 
       Measuring Heart Rate using camera's of smartphones <br> 
-      Measuring Breathing Rate using camera. <br> 
+      Measuring Breathing Rate using camera <br> 
       Image analysis applied to wound assessment <br>
-      The ability to monitor patients and prevent patient emergencies before they occur, by analysing data for key indicators <br>
-      To deliver the above projects, we are using deep learning techniques deep convolutional neural networks and <br>  
-      sophisticated machine learning technique plus signal processing. <br>
-      For instance we have to find face landmark, eye gaze, etc that one needs sophisticated techniques plus a proper infrastructure, pipeline as the data size is big. 
     technologies_used: | 
       TensorFlow, Pytorch, Python, Mobile Development.
-    extra: https://mypersonalwebpage.herokuapp.com/pure-ai-ml
+    extra: https://shahnikba.github.io/Projects_item4.html
     
 
   - role: Founder
@@ -89,7 +82,7 @@ experience:
       Not a registered company.
     technologies_used: | 
       C, C++, Python C, AWS Cloud
-    extra: https://mypersonalwebpage.herokuapp.com/market-making
+    extra: https://shahnikba.github.io/Projects_item3.html
   
   - role: Quant Algo, Model Validation
     time: September 2015-May 2018
@@ -123,7 +116,7 @@ experience:
     time: Mar 2009-Dec 2010
     company: BNP PARIBAS
     details: |
-      Research of statistical arbitrage of cross-asse. <br>
+      Research of statistical arbitrage of cross-asset. <br>
       Research of arbitrage on the smile of cross FX <br>
     technologies_used: | 
       C++,R, Excel
@@ -135,7 +128,7 @@ experience:
     details: |
       Cross smile modelling for Hybrid FX products <br>
       Research of arbitrage on the smile of cross FX <br>
-      Implemenet the hybrid interest rate model in CUDA GPU.  The first person to do that in whole finance industry (2008) when most people have never heard og GPU or NVIDIA <br>
+      Implemenet the hybrid interest rate model in CUDA GPU.  The first person to do that in whole finance industry (2008) when most people have never heard of GPU or NVIDIA <br>
       Implemenet the hybrid interest rate model/Forex, a model witth mixutre of local volatity and stiochatic volatality.
     technologies_used: | 
       C++,Cuda, Excel
@@ -146,23 +139,16 @@ publications:
     authors: Nikbakhtian Shahram
     conference: European Journal of Heart, 2021
     
-  - title: Second title of paper. An interesting one too.
-    link: "#"
-    authors: John E. Doe
-    conference: Some conference again, 2018
-
 projects:
-  - title: OCR Persian
+  - title: Autmated Market making
     link: #
     details: |
-      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod 
-      tempor incididunt ut labore et dolore magna aliqua.
+      For the detail, please refer to the link in my webpage
 
   - title: Blood Pressure measurement
     link: #
     details: |
-      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod 
-      tempor incididunt ut labore et dolore magna aliqua.
+      Measuring blood pressure via smartphone
 
 # Volunteering
 volunteering:
