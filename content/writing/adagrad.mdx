@@ -2,7 +2,7 @@
 slug: adagrad
 title: AdaGrad, and the curse of adaptive learning rates
 date: 2024-10-15
-summary: AdaGrad adapts the learning rate per-parameter from historical gradients. It's elegant. It's also, eventually, wrong — in a specific way that RMSProp and Adam fix.
+summary: AdaGrad adapts the learning rate per-parameter from historical gradients. It's elegant. It's also, eventually, wrong — in a specific way that RMSProp fixes.
 meta: Optimisation · notes
 ---
 
@@ -61,62 +61,3 @@ Same per-parameter adaptivity as AdaGrad; the moving average forgets
 old gradients so the effective learning rate doesn't decay to zero.
 Simple, and it worked well enough that it's often the default
 optimiser in RL and RNN training even now.
-
-## Adam — RMSProp + momentum + bias correction
-
-**Adam** (Kingma & Ba, 2014) is RMSProp with two additions.
-
-First, maintain an exponentially-weighted moving average of the
-gradient itself (a first-moment estimate), giving momentum:
-
-$$
-m_t = \beta_1 m_{t-1} + (1 - \beta_1) g_t, \qquad
-v_t = \beta_2 v_{t-1} + (1 - \beta_2) g_t^2.
-$$
-
-Second, apply a bias correction to counteract the fact that both
-$m_t$ and $v_t$ are initialised at zero and take time to reach their
-true expected values:
-
-$$
-\hat{m}_t = \frac{m_t}{1 - \beta_1^{t}}, \qquad \hat{v}_t = \frac{v_t}{1 - \beta_2^{t}}.
-$$
-
-The step:
-
-$$
-\theta_{t+1} = \theta_t - \frac{\eta}{\sqrt{\hat{v}_t} + \varepsilon} \hat{m}_t.
-$$
-
-Default $\beta_1 = 0.9$, $\beta_2 = 0.999$. Adam is the most widely
-used optimiser in deep learning today for one boring reason: it's
-forgiving. Plug in the default hyperparameters, hit run, get a
-reasonable result. That trade — some generalisation gap versus SGD in
-exchange for far less tuning — turns out to be the right one at
-industrial scale.
-
-## AdamW and the weight-decay wrinkle
-
-**AdamW** (Loshchilov & Hutter) fixes a subtle bug in how classical
-Adam handles L2 regularisation: applying weight decay inside the
-adaptive-scaling step meant the effective weight-decay strength was
-different for each parameter, weakening the regularisation on
-frequently-updated weights. AdamW decouples weight decay from the
-adaptive step, applying it as a direct multiplicative shrinkage.
-Empirically this is what most modern deep-learning training uses,
-even when the paper still says "Adam".
-
-## When to still reach for SGD
-
-Adam's forgiveness costs something. On vision tasks with ResNet-style
-architectures, carefully-tuned SGD with momentum often generalises
-better than Adam — the difference has been documented repeatedly.
-The gap seems to be about which minima the two optimisers find: SGD
-tends to find flatter minima that generalise better, Adam's per-
-parameter adaptation lets it hunker down into sharper ones that fit
-training data as well but generalise less well.
-
-The practical rule: try Adam first because it's the cheaper
-experiment. If you're at the tuning-effort budget, benchmark against
-SGD with a well-chosen schedule on the specific problem — sometimes
-SGD wins, and when it does the gain can be worth the tuning cost.
