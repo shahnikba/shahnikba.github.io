@@ -7,153 +7,201 @@ contact:
   email: nikbakhtian@gmail.com
   github: shahnikba
   linkedin: shahram-nikbakhtian-3920661a
-  phone: 
-  gitlab: 
-  twitter: 
+  phone:
+  gitlab:
+  twitter:
 
 languages:
-  - idiom: English
-  - idiom: French
-  - idiom: Persian
+  - idiom: "French (native)"
+  - idiom: "Persian (native)"
+  - idiom: "English (fluent)"
 
 education:
-  - degree: MSc in Applied Mathematics
-    time: 2000-2004
-    university: Ecole Polytechnique
+  - degree: "MSc Mathematical Finance / DEA Probabilités et Applications"
+    time: 2003-2004
+    university: École Polytechnique, Paris
 
-  - degree: BSc in Electrical Enginnering
+  - degree: "Diplôme d'Ingénieur"
+    time: 2000-2003
+    university: École Polytechnique, Paris
+
+  - degree: "BSc Electrical Engineering (Minor: Mathematics)"
     time: 1996-2000
-    university: Sharif University
+    university: Sharif University, Tehran
 
 skills:
-  - category: Backend
-    skill: 
-      - C/C++
-      - Python, R
-      - C#, Java 
-  - category: Frontend
+  - category: Programming
     skill:
-      - Objective C
-      - Java
-  - category: DevOps
+      - Python, C, C++
+      - CUDA, kdb, SQL
+      - R, Linux
+  - category: Quantitative
     skill:
-      - Docker
-      - Kubernetes
-  - category: Familair
-    skill: 
+      - Time series, stochastic calculus
+      - Signal processing, optimisation
+      - Bayesian, causal ML, survival analysis
+  - category: Trading
+    skill:
+      - Alpha research, systematic strategies
+      - HFT market making, execution
+      - Derivatives pricing (local + stochastic vol)
+  - category: Infrastructure
+    skill:
+      - AWS, PostgreSQL, gRPC
+      - Low-latency C++, WebSockets
+  - category: Familiar
+    skill:
       - OCaml, F#, Haskell
       - Go, Rust
-      - Cuda
 
 # Profile
 profile: |
-  I joined Huma, in the Spring of 2018, to build their research and development team, the goal is to deliver quantitative tools and functionalities 
-  to help monitor patients remotely. My mission is to implement Machine Learning and Artificial Intelligence techniques to find signals that can help 
-  diagnose the deterioration of the patient earlier. Before joining Huma, I worked at BAML, where, with my team, I succeed to validate the algorithmic 
-  models of trading across the entire business and build a Machine Learning Model for the execution business. Before joining BAML, I was at BNP. 
-  I started as a hybrid interest rate quant and then developed a quantitative trading strategy for the Credit Prop desk (BNP's most successful trading desk). 
-  Due to the Volcker Rule, those activities were closed, and I ultimately worked as a quantitative FX high-frequency market maker where 
-  I was responsible for automated pricing (mid-discovery and prediction) and auto-hedging algorithms. My focus was on generating trading signals, 
-  market microstructure, auto-hedging, pricing engines, market making, and hedging strategies.
-  
+  Senior Quantitative Research & Trading leader with 20+ years across FX, crypto, derivatives, and applied AI/ML.
+  Currently Head of Trading at Hercle (crypto systematic strategies and market making). Previously Director of Quant/ML Trading at
+  Oxford Algorithms and Head of AI/ML at Huma, where the team's UK Biobank sleep-timing study was peer-reviewed and covered by
+  the BBC, The Washington Post, and The Guardian. Founded Ainemox in 2021 and solo-built a fully automated HFT crypto
+  market-making stack in pure C/C++ across Binance, Bybit, BitMEX, Coinbase, and FTX — $1bn+ cumulative volume.
+  Before that, ten years at BNP Paribas across IR exotics, FX prop, credit arbitrage (on BNP's most successful trading desk before
+  the Volcker Rule closed it), and eFX automated market making — and was the first person in the finance industry to implement
+  hybrid IR/FX pricing on CUDA GPU (2008). Two years at Bank of America Merrill Lynch validating algorithmic trading models
+  across eFX, fixed income, and equities. École Polytechnique (Mathematical Finance, DEA Probabilités); Sharif University (BSc EE).
+  Gold medal, Iranian Mathematical Olympiad.
+
 # Experience
 experience:
-  - role: AI Lead
-    time: 2018-Present
-    company: Huma(Medopad)
+  - role: Head of Trading
+    time: Aug 2025 - Present
+    company: Hercle S.R.L.
     details: |
-      Causal Machine learning/AI application in Healthcare <br>
-      Motion sensor analysis to predict risk of fall for elderly people <br>
-      Measuring and monitoring activity and sleep pattern <br> 
-      Measuring Heart Rate using camera's of smartphones <br> 
-      Measuring Breathing Rate using camera <br> 
-      Image analysis applied to wound assessment <br>
-    technologies_used: | 
-      TensorFlow, Pytorch, Python, Mobile Development.
-    extra: https://shahnikba.github.io/Projects_item4.html
-    
+      Lead the trading division — systematic strategies, execution infrastructure, and real-time risk in crypto markets. <br>
+      Own automated quoting infrastructure, alpha research, and research-to-production delivery, driven end-to-end through
+      agentic AI tooling.
+    technologies_used: |
+      C++, Python, AWS, agentic AI
 
-  - role: Founder
-    time: 2021-2022
+  - role: Director of Quant/ML Trading
+    time: Sep 2023 - Aug 2025
+    company: Oxford Algorithms
+    details: |
+      Led R&D deploying ML methodologies from research to live production systematic strategies. <br>
+      Applied ensemble methods, regression, and Bayesian techniques for signal discovery and robustness in
+      non-stationary environments. <br>
+      Owned the full pipeline: data engineering, model design, validation, live deployment.
+    technologies_used: |
+      Python, PyTorch, Bayesian methods, PostgreSQL
+
+  - role: Head of AI / ML
+    time: May 2018 - Aug 2023
+    company: Huma, Ltd
+    details: |
+      Led the applied AI/ML team building deep-learning pipelines on terabyte-scale wearable-sensor data. <br>
+      Peer-reviewed UK Biobank study on sleep-onset timing and cardiovascular risk — covered by BBC,
+      The Washington Post, and The Guardian. <br>
+      Smartphone-camera heart-rate measurement (facial colour + Newtonian head-motion, using front + rear cameras
+      to cancel hand-shake). <br>
+      Fall detection (CNN on motion sensors) and wound assessment (YOLOv3, first deployment to iOS / Android in 2018).
+    technologies_used: |
+      PyTorch, causal ML, survival analysis, computer vision, AWS, PostgreSQL, gRPC
+    extra: https://shahnikba.github.io/dropdown/Learnings_Causality.html
+
+  - role: Founder — HFT Crypto Market Making
+    time: Dec 2021 - Nov 2022
     company: Ainemox
     details: |
-      Fully automatic market making trading system. Trade over 1B$ in Crypto Exchanges.
-      Developed in C++, and with zero external library or package, even market connection, web sockets.
-      Not a registered company.
-    technologies_used: | 
-      C, C++, Python C, AWS Cloud
-    extra: https://shahnikba.github.io/Projects_item3.html
-  
-  - role: Quant Algo, Model Validation
-    time: September 2015-May 2018
+      Solo-built a fully automated HFT crypto market-making stack across Binance, Bybit, BitMEX, Coinbase, and FTX —
+      $1bn+ cumulative volume, sub-millisecond latency, 1000 trades / sec capable. <br>
+      Pure C/C++ with no external libraries: exchange connectivity, market data, quoting, order management,
+      inventory risk. Lightweight C WebSocket broker; JS web dashboard; Python Telegram control app. <br>
+      Ran systematic intraday options market making on FTX MOVE contracts. <br>
+      AWS with full CI/CD; two independent monitoring servers with SMS / WhatsApp / Telegram alerts.
+    technologies_used: |
+      C, C++, Python, JavaScript, AWS, PostgreSQL, WebSockets
+    extra: https://shahnikba.github.io/dropdown/Projects_item3.html
+
+  - role: Quant Algo / Model Validation
+    time: Sep 2015 - May 2018
     company: Bank of America Merrill Lynch
     details: |
-      Responsible of model validation for algo trading
-      Cross asset including eFX trading, Fixed income and Equities
-    technologies_used: | 
-      Python, Java, C++, Kdb, Latex
+      Validated algorithmic trading models across eFX, fixed income, and equities. <br>
+      Assessed statistical assumptions, model robustness, and execution quality of systematic strategies. <br>
+      Built a machine-learning model to optimise FX execution.
+    technologies_used: |
+      Python, Java, C++, kdb, LaTeX
 
-  - role: FX Algorithmic Quant Trader
-    time: Dec 2011-Aug 2015
-    company: BNP PARIBAS
+  - role: FX Algorithmic Quant Trader — eFX AMM Desk
+    time: Dec 2011 - Aug 2015
+    company: BNP Paribas
     details: |
-      Research and development of high frequency strategies for the FX AMM desk. <br>
-      Research and development of alpha strategies relating to flow. <br>
-      Price discovery using all the information at hand. Enhancing risk management algorithms with online calibration of parameters.
-    technologies_used: | 
+      HFT FX spot market making: automated quoting, price discovery, auto-hedging, inventory risk. <br>
+      Alpha signals from order flow and market microstructure. <br>
+      Adaptive risk management frameworks with online parameter calibration.
+    technologies_used: |
       C, C++, R, Python, C#
 
-  - role: Quant, Credit Arbitrage
-    time: Dec 2010-Dec 2011
-    company: BNP PARIBAS
+  - role: Quant — Credit Arbitrage
+    time: Dec 2010 - Dec 2011
+    company: BNP Paribas
     details: |
-      Research of statistical arbitrage of cross-asset. <br>
-      Focus upon searching combinations of co-integrated assets. Pair trading <br>
-    technologies_used: | 
-      R, Excel
+      Statistical arbitrage on cross-asset co-integrated pairs on the Credit Prop desk —
+      BNP's most successful trading desk before the Volcker Rule closed the activity.
+    technologies_used: |
+      R, C++, Excel
 
-  - role: Quant, FX Prop Trading
-    time: Mar 2009-Dec 2010
-    company: BNP PARIBAS
+  - role: Quant — FX Prop Trading
+    time: Mar 2009 - Dec 2010
+    company: BNP Paribas
     details: |
-      Research of statistical arbitrage of cross-asset. <br>
-      Research of arbitrage on the smile of cross FX <br>
-    technologies_used: | 
-      C++,R, Excel
+      Statistical and algorithmic FX trading strategies. <br>
+      Arbitrage research on the cross-FX volatility smile.
+    technologies_used: |
+      C++, R, Excel
 
-
-  - role: Quant, Interest Rate Exotics and FX Hybrids
-    time: Jul 2005-Mar 2009
-    company: BNP PARIBAS
+  - role: Quant — IR Exotics & FX Hybrids
+    time: Jul 2005 - Mar 2009
+    company: BNP Paribas
     details: |
-      Cross smile modelling for Hybrid FX products <br>
-      Research of arbitrage on the smile of cross FX <br>
-      Implemenet the hybrid interest rate model in CUDA GPU.  The first person to do that in whole finance industry (2008) when most people have never heard of GPU or NVIDIA <br>
-      Implemenet the hybrid interest rate model/Forex, a model witth mixutre of local volatity and stiochatic volatality.
-    technologies_used: | 
-      C++,Cuda, Excel
-      
+      Research and production implementation of hybrid interest-rate / FX models combining local and stochastic volatility. <br>
+      First in the finance industry to implement hybrid pricing on CUDA GPU (2008) — orders-of-magnitude speed-up for
+      exotic-options risk.
+    technologies_used: |
+      C++, CUDA, Excel
+
+  - role: Quant Intern — Fixed Income Research
+    time: Apr 2004 - Jul 2005
+    company: Société Générale Asset Management
+    details: |
+      BGM modelling for rates products in OCaml.
+    technologies_used: |
+      OCaml
+
 publications:
-  - title: Accelerometer-derived sleep onset timing and cardiovascular disease incidence a UK Biobank cohort study
+  - title: "Accelerometer-derived sleep onset timing and cardiovascular disease incidence: a UK Biobank cohort study"
     link: "https://academic.oup.com/ehjdh/article/2/4/658/6423198"
-    authors: Nikbakhtian Shahram
-    conference: European Journal of Heart, 2021
-    
-projects:
-  - title: Autmated Market making
-    link: #
-    details: |
-      For the detail, please refer to the link in my webpage
+    authors: "Nikbakhtian S., et al."
+    conference: "European Heart Journal — Digital Health, Vol 2(4), 2021"
 
-  - title: Blood Pressure measurement
-    link: #
+projects:
+  - title: Chess AI
+    link: "/dropdown/Projects_item1.html"
     details: |
-      Measuring blood pressure via smartphone
+      Neural-network positional-evaluation engine — the bet that a stronger evaluator beats deeper search
+      in the ambiguous positional game.
+
+  - title: Persian OCR
+    link: "/dropdown/Projects_item2.html"
+    details: |
+      Deep-learning OCR for handwritten and printed Persian text — CNN + BiLSTM + CTC with a Farsi character LM
+      for the cursive, right-to-left, positionally variant script.
+
+  - title: Persian NLP toolkit
+    link: "#"
+    details: |
+      Tokenizer, lemmatizer, POS tagger, and dependency parser for Persian.
 
 # Volunteering
 volunteering:
   - time: 2016-2017
-    role: Worker
-    company: BAML
+    role: Volunteer
+    company: Bank of America Merrill Lynch
     details: |
-      Bulding a playground for children
+      Building a playground for children.
