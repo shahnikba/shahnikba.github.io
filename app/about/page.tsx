@@ -136,6 +136,16 @@ export default function About() {
             Share my professional experience with a larger group of people.
           </li>
         </ol>
+
+        <h2>Background, for the CV-curious</h2>
+        <p>
+          École Polytechnique in Paris (Diplôme d&rsquo;Ingénieur 2000–03,
+          followed by an MSc in Mathematical Finance and the DEA
+          Probabilités et Applications, 2003–04). Before that, a BSc in
+          Electrical Engineering at Sharif University in Tehran (1996–2000)
+          with a minor in mathematics. In 1994 I picked up a gold medal at
+          the Iranian Mathematical Olympiad — top ten nationally that year.
+        </p>
       </article>
     </main>
   );
