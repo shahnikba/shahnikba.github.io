@@ -3,7 +3,7 @@ slug: huma
 title: Head of AI/ML at Huma
 date: 2023-08-01
 meta: 2018–2023 · London · PyTorch, causal ML, computer vision, AWS
-summary: Led the AI/ML team applying deep learning to terabyte-scale wearable-sensor data — leading to a peer-reviewed UK Biobank publication on sleep timing and cardiovascular risk that was picked up by BBC, WaPo, and The Guardian.
+summary: Led the AI/ML team applying deep learning to terabyte-scale wearable-sensor data — leading to a peer-reviewed UK Biobank publication on sleep timing and cardiovascular risk that was picked up by the BBC, The Washington Post, and The Guardian.
 ---
 
 ## The thread from trading to healthcare
@@ -38,7 +38,7 @@ survival analysis against the cardiovascular-event cohort.
 
 The result — a U-shaped association with the lowest cardiovascular
 risk around 10–11pm bedtime — was peer-reviewed and picked up by
-**BBC, The Washington Post,** and **The Guardian**.
+**the BBC, The Washington Post,** and **The Guardian**.
 
 > Nikbakhtian S., et al.
 > [_Accelerometer-derived sleep onset timing and cardiovascular
@@ -50,15 +50,15 @@ risk around 10–11pm bedtime — was peer-reviewed and picked up by
 
 Two complementary techniques, both shipped.
 
-**(1) Photoplethysmography via colour change.** The face is
-illuminated during the cardiac cycle by transient changes in blood
-volume, which modulate the red and green channels of the camera.
-Fourier analysis of the channel trajectories recovers the cardiac
-frequency.
+**(1) Photoplethysmography via colour change.** During the cardiac
+cycle, transient changes in blood volume modulate the light reflected
+from the face, showing up in the red and green channels of the
+camera. Fourier analysis of the channel trajectories recovers the
+cardiac frequency.
 
-**(2) Newtonian head motion.** Each heartbeat ejects blood toward the
-head, inducing a tiny periodic head displacement — balistocardiography
-via vision. The displacement is too small to see by eye but trivial to
+**(2) Newtonian head motion.** Each heartbeat ejects blood towards the
+head, inducing a tiny periodic head displacement — a form of
+ballistocardiography measured optically. The displacement is too small to see by eye but trivial to
 recover from a camera. The challenge on a smartphone is **hand-shake**:
 the camera itself moves. We solved it by using the front and rear
 cameras simultaneously — the front camera tracks facial features

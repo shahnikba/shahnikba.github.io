@@ -29,9 +29,8 @@ export default function About() {
       <article className="prose">
         <p>
           I&rsquo;m an applied mathematician working in two areas: finance and
-          healthcare. Most of my time nowadays is spent on research. Thinking
-          about my typical working day, I can only give an example, as most
-          days are different.
+          healthcare. Most of my time nowadays is spent on research. My typical
+          day is really just an example — most days are different.
         </p>
         <p>
           I&rsquo;m an early bird, waking up at 6am. This time in the morning

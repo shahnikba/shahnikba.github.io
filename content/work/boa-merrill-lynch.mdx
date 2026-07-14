@@ -21,14 +21,14 @@ Three layers per model:
 
 1. **Theory review.** Independent re-derivation of the model's
    assumptions, sensitivities, and limits of applicability. Where
-   does it stop being reasonable? What corners of the input space are
-   the assumptions silently violated in?
+   does it stop being reasonable? In what corners of the input space
+   are the assumptions silently violated?
 2. **Empirical replication.** Build a separate implementation (often
    in Python) and reproduce the model's outputs on historical data.
    Divergences between our implementation and the desk's are almost
    always interesting — sometimes bugs in one, sometimes assumptions
    documented differently from what the code actually does.
-3. **Production behaviour.** Compare live PnL, slippage, and risk
+3. **Production behaviour.** Compare live P&L, slippage, and risk
    metrics against the model's *claimed* properties. Document where
    they diverge and why.
 

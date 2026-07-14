@@ -27,6 +27,6 @@ export const FEATURED: Featured[] = [
     href: "/work/huma/",
     meta: "Huma, 2018–2023 · PyTorch, causal ML",
     blurb:
-      "Deep-learning models on wrist-accelerometer data at UK Biobank scale led to a peer-reviewed European Heart Journal paper linking sleep-onset timing to cardiovascular events. The U-shaped curve — lowest risk around 10–11pm bedtime — was picked up by BBC, The Washington Post, and The Guardian.",
+      "Deep-learning models on wrist-accelerometer data at UK Biobank scale led to a peer-reviewed European Heart Journal paper linking sleep-onset timing to cardiovascular events. The U-shaped curve — lowest risk around 10–11pm bedtime — was picked up by the BBC, The Washington Post, and The Guardian.",
   },
 ];

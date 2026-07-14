@@ -23,7 +23,7 @@ liquidity, changing microstructure, drift in the joint distribution of
 almost everything you might condition on.
 
 We leaned on three families of methods, chosen for the noise / stability
-tradeoff more than fashion:
+trade-off more than fashion:
 
 - **Ensemble learners** (gradient boosting, random forests) as the
   base rate — they handle noisy tabular features gracefully and their
@@ -32,7 +32,7 @@ tradeoff more than fashion:
   more than raw predictive accuracy — position-sizing, risk overlays,
   regime detection.
 - **Regularised regression** as the honest baseline: when a
-  fancy model can't beat properly-regularised ridge on out-of-sample,
+  fancy model can't beat properly regularised ridge on out-of-sample,
   the fancy model isn't real. Half the time it can't.
 
 ## Robustness as a first-class problem

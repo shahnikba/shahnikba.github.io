@@ -40,7 +40,7 @@ diversity of the true data is lost. This is the classic GAN
 frustration: a beautiful cat that's always the same cat.
 
 **Discriminator saturation.** If $D$ becomes too good too fast, its
-gradient with respect to $G$-outputs shrinks toward zero — the log-
+gradient with respect to $G$-outputs shrinks towards zero — the log-
 sigmoid saturates when the fake is confidently rejected. $G$
 then has no useful signal to learn from. The community's response
 was to keep $D$ deliberately weak — carefully limiting its capacity
@@ -63,13 +63,13 @@ the most useful:
   training substantially more stable. WGAN-GP adds a gradient penalty
   to enforce the Lipschitz condition, giving the still-most-widely-
   used formulation.
-- **Spectral normalization** on discriminator weights bounds the
+- **Spectral normalisation** on discriminator weights bounds the
   Lipschitz constant differently; sometimes complementary to WGAN-GP.
 - **Progressive growing** (Karras et al., ProGAN, then StyleGAN)
   starts training on low-resolution images and progressively adds
   detail. Produced the first genuinely photorealistic face generators.
 - **Careful architectural choices** — no batch norm in $D$, spectral
-  normalization, TTUR (two-time-scale updates giving $D$ and $G$
+  normalisation, TTUR (two-time-scale updates giving $D$ and $G$
   different learning rates).
 
 ## Why diffusion models took over

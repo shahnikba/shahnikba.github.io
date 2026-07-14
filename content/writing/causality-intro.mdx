@@ -31,12 +31,12 @@ rungs, each strictly stronger than the one below:
    $x$. Regression, classification, standard supervised learning.
 2. **Intervention.** $P(y \mid do(x))$ — what I would see about $y$ if
    I *forced* $X$ to take value $x$, breaking the mechanism that
-   normally generates $X$. RCTs, A/B tests, and any properly-adjusted
+   normally generates $X$. RCTs, A/B tests, and any properly adjusted
    observational analysis live here.
 3. **Counterfactuals.** $P(y_x \mid x', y')$ — what *would have*
    happened to a specific unit if $X$ had been $x$, given that we
    actually observed $X = x'$ and $Y = y'$. The most useful rung for
-   post-hoc decision analysis, and the hardest to identify.
+   post hoc decision analysis, and the hardest to identify.
 
 The rungs are cumulative. You cannot answer a rung-2 question with
 rung-1 data alone — you need extra structure (a graph, an experiment,

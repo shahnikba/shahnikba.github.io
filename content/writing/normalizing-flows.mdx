@@ -1,6 +1,6 @@
 ---
 slug: normalizing-flows
-title: Normalizing flow models — tractable likelihood via invertible maps
+title: Normalising flow models — tractable likelihood via invertible maps
 date: 2019-06-04
 summary: Chain together invertible transformations, apply the change-of-variables formula, and you have a generative model with exact likelihood computation.
 meta: Machine learning · notes
@@ -41,7 +41,7 @@ you compose many transformations: $x = f_L \circ f_{L-1} \circ \cdots
 but each layer's Jacobian determinant has to be cheap to compute —
 otherwise the whole thing costs $O(d^3)$ per layer.
 
-The engineering challenge of normalizing flows is designing invertible
+The engineering challenge of normalising flows is designing invertible
 layers with cheap Jacobian determinants.
 
 ## Coupling layers — RealNVP
@@ -89,7 +89,7 @@ cost of a more complex implementation.
 
 ## Continuous flows — Neural ODE flows
 
-**Continuous normalizing flows** replace the discrete composition of
+**Continuous normalising flows** replace the discrete composition of
 layers with a continuous transformation governed by an ODE:
 
 $$
@@ -107,7 +107,7 @@ enormous expressivity — you're picking an entire flow field. In
 practice the ODE solver at training time is the bottleneck; FFJORD
 and successors made this competitive on real problems.
 
-## When normalizing flows are the right tool
+## When normalising flows are the right tool
 
 - **Density estimation.** You want an actual likelihood, not a bound.
   Flows give it to you exactly. Best-in-class on tabular and image
@@ -115,7 +115,7 @@ and successors made this competitive on real problems.
 - **Sampling from a hard target with a known density (up to constant).**
   Reverse the perspective: fit a flow to match a target you can
   evaluate, then sample from the flow. Used in physics, Bayesian
-  posterior sampling, and variational inference (see: normalizing-flow
+  posterior sampling, and variational inference (see: normalising-flow
   VI, IAF-VAEs).
 - **Simulating from a learnt model in latent spaces.** Flows compose
   naturally with other generative models — VAEs with flow-based
