@@ -6,6 +6,10 @@ summary: When exact posterior inference is intractable, variational inference tu
 meta: Machine learning · notes
 ---
 
+These are my working notes on variational inference, distilled
+from Carl Doersch's *Tutorial on Variational Autoencoders* and
+Taehwan Kim's VI lecture notes (both linked at the bottom).
+
 Bayesian posterior inference — computing $p(z \mid x)$ — is almost
 always intractable for interesting models. Variational inference is
 the pragmatic answer: replace the intractable integral with an
@@ -131,3 +135,10 @@ For deep generative models on high-dimensional data (images, audio,
 scientific fields), VI variants remain competitive because the
 alternatives don't scale. But it's worth remembering what you gave
 up when you chose the ELBO.
+
+## Sources
+
+- Doersch, C. *Tutorial on Variational Autoencoders*.
+  [arXiv:1606.05908](https://arxiv.org/pdf/1606.05908.pdf).
+- Kim, T. *Variational Inference* — lecture notes.
+  [taehwanptl.github.io/lectures/lecture_04_18.pdf](https://taehwanptl.github.io/lectures/lecture_04_18.pdf).
