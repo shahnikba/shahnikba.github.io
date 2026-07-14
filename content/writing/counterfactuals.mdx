@@ -2,13 +2,95 @@
 slug: counterfactuals
 title: Counterfactuals — what would have happened
 date: 2019-06-15
-summary: The third rung of Pearl's causal ladder — reasoning about worlds that didn't happen — is the hardest and most useful for policy questions.
+summary: The third rung of Pearl's causal ladder — reasoning about worlds that didn't happen — is the hardest and often the most useful.
 meta: Causality · notes
 ---
 
-The third rung of Pearl's causal ladder is the hardest — and the most
-useful when you want to answer questions like *"what would have
-happened if we'd done this instead?"*
+Pearl's causal ladder has three rungs:
 
-_This note is a work-in-progress skeleton. Expanded content coming
-soon; see the [Causality index](/writing/) for related notes._
+1. **Association** — $P(y \mid x)$. What we see when we observe $x$.
+2. **Intervention** — $P(y \mid do(x))$. What we see when we *set* $x$.
+3. **Counterfactuals** — $P(y_{x} \mid x', y')$. What *would have*
+   happened to unit $i$ under treatment $x$, given that we actually
+   observed $x'$ and $y'$ for that unit.
+
+Rung 1 you can do with regression. Rung 2 you can do with a randomised
+controlled trial — or with careful adjustment for confounders, given a
+causal graph. Rung 3 requires more.
+
+## Why the third rung is different
+
+Rungs 1 and 2 are statements about **populations**. Rung 3 is a
+statement about a **specific unit**, in a world that didn't happen.
+
+That's not a small distinction. If I run an RCT on 10,000 patients and
+find that drug A extends life by 3 years on average, I've learned
+something about the population (rung 2). If a specific patient took
+drug A and died at 60, and someone asks *"would this patient still be
+alive if they'd taken drug B?"* — that's a counterfactual (rung 3),
+and no amount of population averages answers it.
+
+## The mechanics
+
+Formally, a counterfactual query needs a **structural causal model** —
+a set of equations, one per endogenous variable, mapping parents (and
+noise) to that variable:
+
+$$
+Y \;=\; f_Y(X, U_Y), \qquad X \;=\; f_X(U_X).
+$$
+
+The recipe (Pearl calls it *abduction–action–prediction*):
+
+1. **Abduction.** Use the observed evidence $(x', y')$ to update the
+   distribution over the exogenous noise $U$ for this unit. The noise
+   captures everything unit-specific we didn't measure.
+2. **Action.** Modify the model to fix $X = x$ — the counterfactual
+   treatment — replacing $f_X$ with the constant $x$. This is a
+   $do$-operation on the modified model.
+3. **Prediction.** Use the modified model, with the updated noise
+   distribution from step 1, to compute the distribution of $Y$ under
+   the counterfactual $X = x$.
+
+The key move is step 1 — the actual observation constrains what
+unmeasured causes were plausibly at work for *this specific unit*.
+
+## Why RCTs don't give you counterfactuals
+
+A common confusion: "we ran an RCT, so we have the counterfactual."
+No — an RCT gives you the *expected* counterfactual outcome under
+each treatment arm. It tells you the difference in population means.
+It doesn't tell you what any *individual* patient would have
+experienced under the other arm. That distinction matters for
+personalised medicine, personalised policy, and — always — for
+retrospective what-if questions.
+
+## When they're identifiable, and when they're not
+
+Rung-3 queries are the least identifiable rung: even with a
+randomised experiment, some counterfactual quantities are
+non-identifiable from data alone and require assumptions about the
+functional form of the structural equations. This is the price of
+asking the hardest question.
+
+Practically, three families of counterfactual quantities show up:
+
+- **Effect of Treatment on the Treated (ETT).** Among those who
+  actually received treatment, what would have happened without it?
+  Identifiable under standard conditional-exchangeability assumptions.
+- **Probability of Necessity (PN).** Given the outcome happened,
+  what's the probability it *wouldn't* have happened without the
+  treatment? Often identifiable, but sensitive to monotonicity
+  assumptions.
+- **Probability of Sufficiency (PS).** Given the outcome didn't
+  happen, what's the probability the treatment *would* have caused it?
+  Companion to PN; same monotonicity story.
+
+## Why I keep coming back to it
+
+Every practical question of the form *"was this decision the right
+one?"* — in trading, in policy, in medicine — is a counterfactual
+question. Even when we can't get a clean identifiable answer, being
+explicit about which counterfactual we're asking about clarifies what
+data or assumption would move the estimate. That's usually more
+valuable than the estimate itself.

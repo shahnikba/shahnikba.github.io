@@ -1,15 +1,89 @@
 ---
 slug: causal-rl
-title: Causal reinforcement learning (draft)
+title: Causal reinforcement learning
 date: 2019-06-14
-summary: Where do causal reasoning and reinforcement learning meet — and where do they still talk past each other.
-meta: Causality · draft
+summary: Where causal reasoning and reinforcement learning meet — and where they still talk past each other.
+meta: Causality · notes
 ---
 
-Reinforcement learning learns from experience — take actions, observe
-rewards, update policies. But *why* an action led to a reward is
-often hidden behind confounders. Causal reasoning gives you the
-language for those questions; RL gives you a way to act on the
-answers.
+Reinforcement learning is a machine that answers **rung-2** questions:
+if I take action $a$ in state $s$, what reward do I expect? Its native
+setting is *interventional* — the agent gets to try things.
 
-_Draft. Full essay to come._
+Causal inference lives on all three rungs of Pearl's ladder —
+association, intervention, counterfactuals — but its methods are built
+around **observational** data, where the agent didn't get to choose
+what happened.
+
+The tension between the two matters more than it looks.
+
+## Where standard RL breaks
+
+Textbook RL assumes the agent controls the actions. Two situations
+break that assumption in practice:
+
+**Off-policy learning from logged data.** You have a dataset of
+$(s, a, r, s')$ tuples collected by *some other* policy $\pi_b$ — a
+human operator, a previous algorithm, a random exploration policy —
+and you want to evaluate or improve a different policy $\pi$. Now
+the actions in your data weren't chosen by you, and the confounders
+that made $\pi_b$ pick $a$ at state $s$ may also affect the reward.
+Importance-sampling corrections handle this *if* $\pi_b$ is known and
+overlapping — otherwise you have an unobserved-confounder problem
+straight out of causal inference.
+
+**Partial observability of the state.** In practical MDPs the "state"
+you condition on is a projection of the true underlying state. If a
+latent variable affects both the action selection *and* the reward,
+you have unmeasured confounding, and value estimates from
+observational trajectories are biased in exactly the way Pearl
+predicts.
+
+## What causal reasoning offers
+
+Three concrete lifts.
+
+**Do-calculus for off-policy evaluation.** Framing off-policy value
+estimation as computing $\mathbb{E}[R \mid do(A = \pi(S))]$ makes the
+identification assumptions explicit. When the observational data
+comes from a policy that was *itself* confounded (e.g., a doctor
+choosing treatment based on patient-severity information the agent
+doesn't observe), standard OPE is biased and needs adjustment or
+sensitivity analysis, not more data.
+
+**Causal bandits.** A whole line of work (Bareinboim, Pearl) shows
+that when you know part of the causal graph, you can beat standard
+bandits — because you can rule out arms whose causal structure
+implies they can't be optimal. The graph is a form of prior knowledge
+that standard exploration ignores.
+
+**Counterfactual policy improvement.** Given a trajectory produced by
+policy $\pi_b$, you can ask: what would the trajectory have been under
+$\pi$? Answering this uses rung-3 reasoning explicitly, and gives you
+tighter policy-improvement guarantees than pure importance sampling
+when the structural model is reliable.
+
+## Where they still talk past each other
+
+The two literatures use overlapping words for different things.
+"State" in RL is a Markov sufficient statistic; "confounder" in
+causal inference is an unobserved cause of both treatment and outcome
+— sometimes these coincide, sometimes they don't. "Intervention" in
+RL means "the agent acts"; in causal inference $do(x)$ means "fix
+this variable to $x$ regardless of its usual parents", which is a
+stronger statement.
+
+The practical consequence: RL papers often *claim* to solve a causal
+problem while implicitly assuming ignorability (no unobserved
+confounders), and causal-inference papers often *claim* to enable
+sequential decisions without engaging with credit assignment over long
+horizons. The interesting research is where a paper takes both frames
+seriously.
+
+## Why it matters for real systems
+
+Anywhere you're doing sequential decision-making from mostly-logged
+data — clinical treatment policies, execution algorithms in trading,
+recommendation systems learning from past logs — you are doing
+causal RL whether you know it or not. Getting the causal frame right
+turns a subtle bias into a diagnosable problem.
