@@ -1,0 +1,74 @@
+---
+slug: oxford-algorithms
+title: Director of Quant/ML Trading at Oxford Algorithms
+date: 2025-07-01
+meta: Sep 2023 – Aug 2025 · London · Python, PyTorch, Bayesian methods, PostgreSQL
+summary: Led R&D deploying machine-learning methodologies from research to live production systematic strategies — signal discovery, robustness in non-stationary regimes, and the full research-to-production pipeline.
+---
+
+## Mandate
+
+Director of Quant / ML Trading at Oxford Algorithms, a systematic
+fund. Responsible for the applied-ML side of the research operation:
+alpha models, signal robustness, and the pipeline that turns a
+promising research artefact into a strategy actually running against
+the P&L.
+
+## What the research looked like
+
+Financial time series are the canonical case for the hard version of
+machine learning: **high-dimensional inputs, low signal-to-noise, and
+non-stationary in every sense that matters** — regime changes, changing
+liquidity, changing microstructure, drift in the joint distribution of
+almost everything you might condition on.
+
+We leaned on three families of methods, chosen for the noise / stability
+tradeoff more than fashion:
+
+- **Ensemble learners** (gradient boosting, random forests) as the
+  base rate — they handle noisy tabular features gracefully and their
+  failure modes are well-understood.
+- **Bayesian techniques** where uncertainty quantification mattered
+  more than raw predictive accuracy — position-sizing, risk overlays,
+  regime detection.
+- **Regularised regression** as the honest baseline: when a
+  fancy model can't beat properly-regularised ridge on out-of-sample,
+  the fancy model isn't real. Half the time it can't.
+
+## Robustness as a first-class problem
+
+More time went into signal *robustness* than into signal *discovery*.
+A strategy that works on a 2019–2022 backtest and stops working in
+2023 didn't have an alpha; it had a regime alignment. Standard tools
+we used continuously:
+
+- **Walk-forward re-fitting** on rolling windows, comparing
+  in-sample-cheat vs out-of-sample performance to catch leakage.
+- **Regime-conditional performance decompositions** — a model that
+  produces most of its P&L in one regime slice is a model that will
+  disappoint you when that regime ends.
+- **Stress on the joint distribution of inputs**, not just marginals.
+  If the correlation structure between your features and the label
+  drifts, the model breaks in ways univariate stability plots don't
+  catch.
+
+## Pipeline discipline
+
+The research → production pipeline is where most quant shops leak
+alpha, not in the model itself. What we insisted on:
+
+- **One canonical data path.** Same feature construction from research
+  through production. If you can't reproduce a research backtest bit-for-bit
+  from live-shaped data, you're going to be surprised in live.
+- **Every model gets a validation harness before deployment.** Not
+  "does the notebook print a good number", but a scripted suite that
+  runs against held-out data and produces a pass/fail with reasons.
+- **PostgreSQL as the backbone** for trades, market data, model outputs,
+  and metrics — one queryable source of truth for research and
+  post-trade analysis alike.
+
+## What transferred forward
+
+Two years of running the full research-to-production cycle at Oxford
+was the direct precursor to how I now run Hercle — the same shape,
+just faster and with more of the SDLC automated.

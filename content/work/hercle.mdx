@@ -1,0 +1,64 @@
+---
+slug: hercle
+title: Head of Trading at Hercle
+date: 2025-08-01
+meta: Aug 2025 – present · Italy / remote · C++, Python, AWS
+summary: Running Hercle's crypto systematic-trading division — market making, alpha research, and the research-to-production stack, driven end-to-end with agentic-AI tooling.
+---
+
+## The role
+
+I lead the trading division at Hercle, a European crypto trading firm.
+The mandate is broad — systematic-strategy research, execution
+infrastructure, live risk — but it fits under one line: **run the
+algo-lifecycle end-to-end, from research prototype to money-managing
+production, and do it fast**.
+
+## What that looks like day-to-day
+
+Three overlapping threads.
+
+**Systematic strategies.** Alpha research on liquid crypto markets:
+signal discovery on order-flow and microstructure features, then the
+usual robustness / regime / capacity checks before anything goes live.
+The half-life of a signal in crypto is short, so the emphasis is on
+iterating quickly and being ruthless about killing what stops working.
+
+**Market-making infrastructure.** Pricing, quoting, inventory risk,
+auto-hedging — the same architecture I've built twice before, this time
+adapted to the exchange topology and rules of the crypto venues we
+trade on.
+
+**Research-to-production discipline.** The gap between a Jupyter
+notebook and a strategy that trades your P&L is usually where the good
+ideas die. Most of my time goes into making that gap boring:
+reproducible builds, versioned data, unit and integration tests for the
+pricing and risk paths, structured logging and alerting, kill switches
+that actually kill.
+
+## Stack
+
+C++ where latency matters, Python for research and orchestration, AWS
+for compute and storage. What's changed in 2025 versus how I ran
+Ainemox in 2021 is the workflow layer:
+
+**Agentic-AI tooling drives most of the SDLC.** I use Claude Code as
+an actual pair for research, refactors, tests, monitoring dashboards,
+and the small operational chores that used to steal an afternoon. It's
+not a novelty. The compound effect on iteration speed for a small team
+is significant, and it lets a small trading operation act with the
+tempo of a much bigger one.
+
+## What I think about most
+
+The two questions I return to:
+
+- **Which of our edges are actually stable, and which are just working
+  because the regime hasn't flipped yet?** Every crypto market maker
+  learns this the hard way at some point. The answer is disciplined
+  monitoring plus a willingness to reduce or pull strategies before the
+  drawdown proves the point.
+- **How does agentic-AI change the shape of a small quant desk?**
+  There's a version of this business where a two- or three-person team
+  runs the operation of what used to take twenty. We're finding the
+  edges of that.

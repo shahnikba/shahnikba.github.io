@@ -1,0 +1,72 @@
+---
+slug: boa-merrill-lynch
+title: Quant Algo & Model Validation at Bank of America Merrill Lynch
+date: 2018-05-01
+meta: Sep 2015 – May 2018 · London · Python, C++, Java, kdb
+summary: Model validation for algorithmic trading across eFX, fixed income, and equities. Independent assessment of the statistical assumptions, model risk, and execution quality of every algo running in production — plus an ML model for FX execution.
+---
+
+## Mandate
+
+Joined BAML as a quant algo / model-validation specialist covering
+trading models across the entire business — **eFX, fixed income, and
+equities**. The mandate was independent assessment: did the model do
+what the desk claimed it did, were the statistical assumptions sound,
+were the risk frameworks defensible to internal model-risk governance
+and to regulators.
+
+## What validation actually involves
+
+Three layers per model:
+
+1. **Theory review.** Independent re-derivation of the model's
+   assumptions, sensitivities, and limits of applicability. Where
+   does it stop being reasonable? What corners of the input space are
+   the assumptions silently violated in?
+2. **Empirical replication.** Build a separate implementation (often
+   in Python) and reproduce the model's outputs on historical data.
+   Divergences between our implementation and the desk's are almost
+   always interesting — sometimes bugs in one, sometimes assumptions
+   documented differently from what the code actually does.
+3. **Production behaviour.** Compare live PnL, slippage, and risk
+   metrics against the model's *claimed* properties. Document where
+   they diverge and why.
+
+Done across BAML's entire algorithmic trading footprint, this was
+unusually broad cross-asset exposure — the same analytical toolkit
+applied back-to-back to FX spot algos, fixed-income execution, and
+equities VWAP systems.
+
+## ML for FX execution
+
+Beyond validation, I built a **machine-learning model to optimise FX
+execution strategies** — feeding microstructure and order-flow features
+into a model that selected the right execution style for a given trade
+profile (spread capture vs. impact vs. urgency).
+
+The validation muscle helped here: I built the model with the same
+scepticism a validator would apply to it. Which meant the model got
+shipped with a clear characterisation of when it would and wouldn't
+outperform the simpler heuristics.
+
+## Stack
+
+Python and Java for the validation framework, C++ for hot-path
+reference implementations, **kdb / q** for tick-level historical
+analysis (still the right tool for that specific job in 2015, and
+arguably still). LaTeX for the model-risk reports; large banks run on
+model-risk PDFs.
+
+## Beyond the desk
+
+Volunteered on a **children's playground build** in 2016–17 through the
+BAML community programme. A small thing, but worth mentioning because
+it was one of the more rewarding non-quant projects I've done — and a
+reminder that day jobs aren't the only place useful work happens.
+
+## What's transferable
+
+The validation work leaves you with a particular discipline: **assume
+the model is wrong until proven otherwise**. That habit is
+unreasonably useful in systematic alpha research, where the cost of a
+flawed assumption only shows up live, at the worst possible time.
