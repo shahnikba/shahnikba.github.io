@@ -1,11 +1,10 @@
 name: Deploy Next.js to GitHub Pages
 
-# Runs only on the migration branch for now. Once you're ready to
-# cut over, change `branches:` to [main] (or leave both) and switch
-# the repo's Pages source to "GitHub Actions".
+# Deploys on every push to main. Also runnable manually from the
+# Actions tab (workflow_dispatch).
 on:
   push:
-    branches: [next-migration]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
