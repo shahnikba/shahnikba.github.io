@@ -1,14 +1,13 @@
-title: My personal webpage
-description: My blog, noes, resume
+title: Shahram Nikbakhtian
+description: Notes on causality, optimisation, and applied ML — plus a few personal projects (chess, Persian NLP, automated market making).
 google_analytics: G-9CZJL4NZPE
 author: "Shahram Nikbakhtian"
 theme: jekyll-theme-hacker
 #github: [metadata]
 
-github_username: "<github_username>"
-facebook_username: "<facebook_username>"
-twitter_username: "<twitter_username>"
-linkedin_id: "<linkedin_id>"
+github_username: "shahnikba"
+linkedin_id: "shahram-nikbakhtian-3920661a"
+email: "nikbakhtian@gmail.com"
 
 blog: on                 # Show blog tag and post list (on | off)
 theme_base: "dark"       # Theme palette (light | dark)
