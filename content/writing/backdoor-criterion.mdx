@@ -2,22 +2,41 @@
 slug: backdoor-criterion
 title: The backdoor criterion
 date: 2022-11-10
-summary: A graphical recipe for when controlling for a set of observed variables identifies a causal effect — and when it doesn't.
+summary: Start from the intuition — matching on observed confounders — and generalise it to a graphical recipe for when observational adjustment identifies a causal effect.
 meta: Causality · notes
 ---
 
-Given a causal DAG, when can you identify the causal effect of $X$ on
-$Y$ by adjusting for some set $Z$ of observed variables?
+The intuition is easier than the formal statement. Start there.
 
-The **backdoor criterion** is the concrete recipe.
+## The intuition — matching on observed confounders
 
-## The setup
+Determine which other variables $X$ (age, gender) drive both $D$
+(a drug) and $Y$ (health). Then, find units with the same values for
+$X$ (same age, same gender), but different values for $D$, and compute
+the difference in $Y$. If there is a difference in $Y$ between these
+units, it should be due to $D$, and not due to anything else.
 
-You want to estimate the interventional distribution $P(y \mid do(x))$
-from observational data. You have a DAG that you believe describes
-the true data-generating process. You have some observed variables you
-could plausibly condition on. Which subset gives you an unbiased
-estimate?
+That's the whole causal-inference programme in one paragraph. Almost
+everything below is the formal version of it — with two additions that
+the intuition doesn't make obvious:
+
+1. Not every observed variable is safe to match on. Some *actively
+   bias* the estimate when you include them.
+2. Sometimes no valid matching set exists at all — and the graph is
+   what tells you.
+
+The **backdoor criterion** is the concrete recipe for both.
+
+## From intuition to graph
+
+Switching to formal notation for the technical part: call the
+treatment $X$ (previously $D$), the outcome $Y$, and the set of
+observed variables we might adjust on $Z$ (previously $X$).
+
+We want to estimate the interventional distribution $P(y \mid do(x))$
+from observational data. We have a DAG that describes the true
+data-generating process. Which subset $Z$ of observed variables gives
+us an unbiased estimate?
 
 ## The criterion
 
@@ -25,7 +44,7 @@ A set of observed variables $Z$ satisfies the backdoor criterion
 relative to the pair $(X, Y)$ if:
 
 1. **No node in $Z$ is a descendant of $X$.** Conditioning on
-   consequences of the treatment can bias the estimate — this is the
+   consequences of the treatment biases the estimate — this is the
    classic mistake of "controlling for the mechanism".
 2. **$Z$ blocks every path from $X$ to $Y$ that begins with an arrow
    *into* $X$.** These are the *backdoor paths* — spurious routes from
@@ -38,71 +57,46 @@ P(y \mid do(x)) \;=\; \sum_{z} P(y \mid x, z)\, P(z).
 $$
 
 This is the **adjustment formula**. Regress $Y$ on both $X$ and $Z$,
-then average over the marginal distribution of $Z$.
+then average over the marginal distribution of $Z$. In the matching
+intuition above, "find units with the same $X$" is the special case
+where you condition on $Z$ discretely rather than modelling it.
 
-## Two things it tells you at once
+## The colliders trap — why "match on everything" is wrong
 
-The criterion answers two distinct questions with one tool:
+The intuition above suggests: measure everything you can, match on
+all of it, done. But some inclusions actively *hurt* the estimate.
 
-- **Can I identify the effect from this data?** Yes if a valid
-  backdoor set $Z$ exists; no if it doesn't.
-- **What variables should I actually include in my adjustment?** The
-  ones in $Z$. Not more, not fewer. In particular, don't throw in
-  every measured variable "just in case" — the criterion warns you
-  that some inclusions are actively harmful.
-
-## The colliders trap
-
-The second condition — blocking backdoor paths — sounds like
-"condition on variables between $X$ and $Y$". It's not. A path is
-blocked by $Z$ if any node on the path is either:
+The offenders are called **colliders** — common-effect nodes. A path
+is blocked by $Z$ if any node on the path is either:
 
 - a non-collider that *is* in $Z$, or
 - a collider that is *not* in $Z$ (and none of its descendants are in
   $Z$ either).
 
-Colliders are common-effect nodes. Conditioning on a collider *opens*
-a path rather than blocking it — the Berkson-style bias. So a valid
-adjustment set has to include the confounders while carefully *not*
-including the colliders. The graph is what tells them apart.
+Conditioning on a collider *opens* a path rather than blocking it —
+the Berkson-style bias. So a valid adjustment set has to include the
+confounders while carefully *not* including the colliders. The graph
+is what tells them apart. Without a graph, "throw in every observed
+variable" is a strategy that biases you in ways you can't predict.
 
-## What you can and can't do without measurement
+## When the intuition can't be saved
 
 The backdoor criterion has a hard requirement: all the backdoor paths
 must be blockable by observed variables. If some backdoor path runs
 entirely through unobserved variables, no backdoor adjustment can save
-you. You need something else — an instrument, the frontdoor criterion,
+you — no matter how much you match on what you *can* see.
+
+You need something else — an instrument, the frontdoor criterion,
 sensitivity analysis — or you have to admit the effect isn't
-identifiable from this data.
-
-This is the honest part of causal inference: it tells you when your
-data is not enough. Regression will produce a number regardless.
-
-## Worked example: age and treatment
-
-A doctor picks treatment $X$ based on patient age $A$. Age also
-affects outcome $Y$ directly (older patients have worse outcomes on
-average). So:
-
-$$
-A \rightarrow X, \qquad A \rightarrow Y, \qquad X \rightarrow Y.
-$$
-
-The path $X \leftarrow A \rightarrow Y$ is a backdoor path. Age is a
-non-collider on the path. So $Z = \{A\}$ blocks the backdoor. The
-adjustment formula tells us to compute $P(y \mid do(x))$ by conditioning
-on age and averaging.
-
-If age were unmeasured, no backdoor set exists, and we cannot
-identify the effect of treatment from data alone. We'd need to
-randomise, or find something else — an instrument, a mediator that
-lets us use the frontdoor criterion — or accept non-identifiability.
+identifiable from this data. This is the honest part of causal
+inference: it tells you when your data isn't enough. Regression will
+produce a number regardless.
 
 ## The mental habit
 
 The backdoor criterion is worth internalising as a mental habit even
 when you don't draw the graph explicitly: whenever someone claims a
 causal effect from observational data, ask *"what are the backdoor
-paths and did they close them all?"* If they can't name the paths,
+paths, and did they close them all?"* If they can't name the paths,
 they didn't think about it. If they closed some but not all, the
 estimate is biased in a direction the graph will tell you.
