@@ -1,6 +1,0 @@
-#!/bin/bash
-
-echo -n "XYZZY.."
-echo ". Nothing happens..."
-
-

@@ -1,0 +1,39 @@
+---
+slug: adagrad
+title: AdaGrad, and the curse of adaptive learning rates
+date: 2019-06-07
+summary: AdaGrad adapts the learning rate per-parameter from historical gradients. It's elegant. It's also, eventually, wrong.
+meta: Optimisation · notes
+---
+
+The most straightforward improvement over plain SGD is AdaGrad.
+The idea is small and elegant: **scale each parameter's step by the
+inverse-square-root of the sum of its historical squared gradients**.
+
+For parameter $\theta_i$ at step $t$, the update is
+
+$$
+G_{t,i} = \sum_{k=1}^{t} g_{k,i}^{2},
+\qquad
+\theta_{t+1,i} = \theta_{t,i} - \frac{\eta}{\sqrt{G_{t,i} + \varepsilon}}\; g_{t,i}.
+$$
+
+Parameters that see large gradients early get shrunk; sparse or
+rarely-updated parameters keep their step size. This works
+beautifully on sparse convex problems — famously NLP with sparse
+features.
+
+## Why it eventually breaks
+
+The problem is right there in the formula: $G_{t,i}$ is
+**monotonically increasing**. Effective learning rates decay
+towards zero as training progresses, even when the loss surface
+would benefit from moving faster later. On non-convex problems with
+long training horizons — which is basically everything today — this
+kills learning long before you converge.
+
+RMSProp and Adam patch this by using an *exponentially-weighted*
+moving average instead of a cumulative sum. Same idea, without the
+death spiral.
+
+_More on RMSProp and Adam in the next notes._

@@ -1,0 +1,47 @@
+---
+slug: persian-ocr
+title: Persian OCR — reading handwritten and printed Farsi
+date: 2019-01-01
+meta: Personal project · Python, PyTorch
+summary: Deep-learning OCR for handwritten and printed Persian text — CNN + BiLSTM + CTC with a Farsi character LM for the cursive, right-to-left, positionally variant script.
+---
+
+A deep-learning system that converts images of Persian text into
+machine-readable characters. Handles both **printed** documents
+(scans, photos of books) and **handwritten** text.
+
+## Why Persian is harder than Latin OCR
+
+Farsi is written in a modified Arabic script with characteristics
+that break most off-the-shelf OCR pipelines:
+
+- **Cursive by default.** Adjacent letters connect, so segmenting a
+  word into characters isn't obvious — the same glyph can have up to
+  four positional forms (isolated, initial, medial, final).
+- **Right-to-left** reading order, mixed with left-to-right numerals
+  and any embedded Latin text.
+- **Optional diacritics** (short-vowel marks). Usually omitted, but
+  when present they change meaning.
+- **Highly variable handwriting styles** — Nastaʿlīq, Naskh,
+  Shekasteh each have very different letter shapes.
+
+## Architecture
+
+- **Text detection** — locate text regions in the image (rotated
+  bounding boxes for scanned or photographed pages that aren't
+  perfectly aligned).
+- **Line and word segmentation** — extract lines and then words,
+  respecting the RTL flow.
+- **Sequence recognition** — a CNN + BiLSTM + CTC pipeline maps
+  variable-length image strips directly to character sequences
+  without needing per-character bounding boxes.
+- **Language-model rescoring** — a Persian character-level LM
+  disambiguates visually similar options (e.g. dotted vs. undotted
+  variants of the same base shape).
+
+## Data
+
+Combined printed corpora (photocopied books, magazine scans) with
+handwritten samples. Augmented aggressively — rotations, elastic
+distortions, ink-density variations, background noise — because raw
+handwritten data is scarce.

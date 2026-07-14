@@ -1,0 +1,91 @@
+---
+slug: huma
+title: Head of AI/ML at Huma
+date: 2023-08-01
+meta: 2018–2023 · London · PyTorch, causal ML, computer vision, AWS
+summary: Led the AI/ML team applying deep learning to terabyte-scale wearable-sensor data — leading to a peer-reviewed UK Biobank publication on sleep timing and cardiovascular risk that was picked up by BBC, WaPo, and The Guardian.
+---
+
+## The thread from trading to healthcare
+
+The connection between trading and healthcare is identical from a
+quantitative perspective: **find signal in a very noisy dataset.** At
+Huma the dataset shifted — terabyte-scale physiological sensor data
+rather than tick data — but the methodology (signal extraction,
+feature engineering, validation discipline) transferred directly.
+
+I led the applied AI/ML team and was responsible for hiring, technical
+direction, and delivery of production research from prototype through
+clinical-grade deployment.
+
+## Sleep timing and cardiovascular risk
+
+The team's flagship publication used the UK Biobank wearable
+accelerometer cohort to ask a simple question: **does the time you go
+to sleep matter for cardiovascular health, independent of how long
+you sleep?**
+
+To answer it, we had to infer sleep-onset times directly from raw
+wrist-worn accelerometer signals at population scale, then run
+survival analysis against the cardiovascular-event cohort.
+
+- Deep-learning sleep-state classifier on raw accelerometer signals
+  (triaxial, terabyte-scale across the cohort).
+- Survival analysis on the resulting bedtime estimates against
+  cardiovascular outcomes.
+- Causal-ML controls for the obvious confounders (sleep duration,
+  age, BMI, sex, comorbidities).
+
+The result — a U-shaped association with the lowest cardiovascular
+risk around 10–11pm bedtime — was peer-reviewed and picked up by
+**BBC, The Washington Post,** and **The Guardian**.
+
+> Nikbakhtian S., et al.
+> [_Accelerometer-derived sleep onset timing and cardiovascular
+> disease incidence: a UK Biobank cohort study_](https://academic.oup.com/ehjdh/article/2/4/658/6423198).
+> **European Heart Journal — Digital Health**, vol. 2, no. 4, 2021,
+> pp. 658–666.
+
+## Smartphone-camera heart-rate measurement
+
+Two complementary techniques, both shipped.
+
+**(1) Photoplethysmography via colour change.** The face is
+illuminated during the cardiac cycle by transient changes in blood
+volume, which modulate the red and green channels of the camera.
+Fourier analysis of the channel trajectories recovers the cardiac
+frequency.
+
+**(2) Newtonian head motion.** Each heartbeat ejects blood toward the
+head, inducing a tiny periodic head displacement — balistocardiography
+via vision. The displacement is too small to see by eye but trivial to
+recover from a camera. The challenge on a smartphone is **hand-shake**:
+the camera itself moves. We solved it by using the front and rear
+cameras simultaneously — the front camera tracks facial features
+(head + hand-shake), the rear camera tracks background features
+(hand-shake only). Subtracting gives the head motion alone.
+
+## Fall detection
+
+A convolutional network on triaxial motion-sensor windows produces a
+per-window fall probability. Aimed at early intervention for elderly
+home-care users, where missed falls have high downstream cost.
+
+## Wound assessment
+
+A pipeline built around YOLOv3 for detecting wound regions in
+clinician-captured photographs, then computing wound surface area —
+the clinically actionable measurement — through a post-processing
+layer.
+
+Two things made it unusual at the time:
+
+- **No reference object required** in the photograph. Most
+  contemporary systems needed a coin or scale in frame for
+  calibration; ours did not.
+- **Phone-deployable.** YOLOv3 was chosen partly for inference speed
+  on device. In 2018 deploying it to iOS and Android was a
+  non-trivial engineering exercise.
+
+Used in venous leg ulcer management to help clinicians flag delayed
+healing.

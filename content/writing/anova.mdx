@@ -1,0 +1,65 @@
+---
+slug: anova
+title: A worked example of two-way ANOVA on plant growth
+date: 2023-01-08
+summary: Simulating plant growth under two factors (sunlight, watering), fitting a two-way ANOVA with interaction, and reading the diagnostic plots.
+meta: Statistics · a worked example
+---
+
+I prefer to simulate the data. It removes any doubt about whether the
+statistical machinery is doing what you think it is.
+
+## Data simulation
+
+Take a plant-growth experiment with two factors: **sunlight level**
+(none, low, medium, high) and **watering frequency** (weekly, daily).
+We generate 800 observations — 100 per (sunlight × watering) cell —
+with a real interaction effect between the two factors.
+
+The story we want the data to tell: watering only matters if there's
+enough sunlight. Under low light nothing grows regardless of water;
+under high light, daily watering pulls ahead of weekly.
+
+## Fitting the model
+
+We fit a two-way ANOVA with interaction. The main effects for
+sunlight and watering both come out significant, and the
+interaction term is also significant — which we expected, because
+we baked it in.
+
+The model explains about **58.8% of the variance** in plant growth
+(adjusted $R^2$). Not bad for a two-factor design.
+
+## Diagnostics
+
+Two checks before we trust the model.
+
+**Normality of residuals.** A Q-Q plot of residuals against a
+theoretical normal shows the points falling reasonably close to the
+diagonal. No egregious tail issues.
+
+**Homogeneity of variance.** Levene's test on the cells returns
+$p = 0.616$ — well above any conventional cutoff — so we cannot reject
+the null hypothesis of equal variances across groups. Good.
+
+## Pairwise comparisons
+
+The interaction is significant, so a global $F$-test isn't enough:
+we want to know **which** sunlight-watering combinations differ
+from which. Tukey's HSD does this while controlling family-wise
+error.
+
+The comparisons show significant differences across most sunlight
+levels *within* each watering group — the interesting places to look
+if you're deciding how much to water at a given light level.
+
+## Visualising it
+
+Boxplots grouped by (sunlight, watering) with the pairwise
+$p$-values overlaid tell the whole story on one figure. Growth rises
+with sunlight in both watering conditions; the daily-watering
+condition pulls further ahead as sunlight increases; and the
+significant pairs are exactly where the boxplots visibly separate.
+
+If a reader wants to reproduce it, the code is on GitHub and takes
+about thirty lines of R.

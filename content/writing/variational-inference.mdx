@@ -1,0 +1,37 @@
+---
+slug: variational-inference
+title: Variational inference — a working intuition
+date: 2019-06-06
+summary: When exact posterior inference is intractable, variational inference turns it into an optimisation problem instead.
+meta: Machine learning · notes
+---
+
+Bayesian posterior inference — computing $p(z \mid x)$ — is almost
+always intractable for interesting models. Variational inference is
+the pragmatic answer: replace the intractable integral with an
+**optimisation problem**.
+
+The move is: pick a family $\mathcal{Q}$ of tractable distributions
+$q(z)$ and find the member of $\mathcal{Q}$ closest to the true
+posterior in KL divergence:
+
+$$
+q^{*}(z) = \arg\min_{q \in \mathcal{Q}} \; \mathrm{KL}\big[q(z) \,\|\, p(z \mid x)\big].
+$$
+
+The KL divergence still involves the intractable posterior. The
+elegant part: minimising this KL is equivalent to *maximising* the
+**evidence lower bound** (ELBO), which only involves quantities we
+can compute:
+
+$$
+\mathrm{ELBO}(q) = \mathbb{E}_{q(z)}\big[\log p(x, z)\big] - \mathbb{E}_{q(z)}\big[\log q(z)\big].
+$$
+
+Now you have a well-posed optimisation. Everything downstream —
+mean-field VI, black-box VI, VAEs — is a specific choice of
+$\mathcal{Q}$ and a specific way to compute or estimate the ELBO
+gradient.
+
+_More on the reparameterisation trick and stochastic VI in the next
+note._

@@ -1,0 +1,24 @@
+---
+slug: hidden-markov
+title: Hidden Markov models from first principles
+date: 2019-06-08
+summary: A hidden Markov model in one paragraph, then the three canonical questions and the algorithms that answer them.
+meta: Machine learning · notes
+---
+
+A **hidden Markov model** has two ingredients: a Markov chain over
+hidden states you cannot observe, and an emission distribution that
+generates observations conditional on the current hidden state. You
+see the emissions; you infer the states.
+
+Three canonical questions:
+
+1. **Evaluation.** Given a model and a sequence of observations, how
+   probable is the sequence? Solved by the **forward algorithm** in
+   $O(N^2 T)$ time.
+2. **Decoding.** What's the most likely sequence of hidden states?
+   Solved by **Viterbi**.
+3. **Learning.** Given only observations, estimate the model
+   parameters. Solved by **Baum–Welch** (an instance of EM).
+
+_Sketching out the full derivation. More to come._

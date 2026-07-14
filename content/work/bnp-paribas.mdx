@@ -1,0 +1,79 @@
+---
+slug: bnp-paribas
+title: Ten years at BNP Paribas
+date: 2015-08-01
+meta: 2005–2015 · Paris and London · C, C++, CUDA, Python, R
+summary: Four desks over ten years — IR exotics on CUDA GPU (an industry first), FX prop, credit arbitrage on the desk Volcker closed, and finally the eFX high-frequency market-making desk.
+---
+
+## The arc
+
+Ten years at BNP Paribas across four very different desks in Fixed
+Income:
+
+1. **Interest-rate exotics & FX hybrids** (2005–2009) — Paris,
+   sell-side quant.
+2. **FX prop trading** (2009–2010) — buy-side / prop seat.
+3. **Credit arbitrage on Credit Prop** (2010–2011) — BNP's most
+   successful trading desk before the **Volcker Rule** wound down
+   US-bank prop trading.
+4. **eFX algorithmic market making** (2011–2015) — London,
+   sell-side, on the automated FX market-making desk.
+
+Unusual for a quant to cover four such different mandates. It gave
+me an end-to-end view from exotic-derivatives pricing through prop
+trading to live high-frequency market making.
+
+## Hybrid IR/FX pricing on CUDA — 2008
+
+The most memorable technical bet was implementing BNP's hybrid IR/FX
+pricer on **CUDA GPU in 2008**. At the time, NVIDIA's general-purpose
+GPU compute was so new that most of the finance industry hadn't heard
+of it — the phrase "GPGPU" still needed an explanation to most trading
+floors.
+
+To my knowledge, this was the **first hybrid pricing model ported to
+CUDA in the entire finance industry**. The speed-up on Monte-Carlo
+and PDE solvers was an order of magnitude or more — enough that what
+used to be overnight risk became intraday risk. That changed how the
+desk could use the model.
+
+## Credit Prop and the Volcker year
+
+In late 2010 I moved to BNP's **Credit Prop desk** — at the time the
+most successful trading desk in the bank. The mandate: statistical
+arbitrage on cross-asset co-integrated pairs and credit-instrument
+relative-value trades.
+
+The desk closed in 2011, a direct casualty of the **Volcker Rule** in
+the post-2008 regulatory reform: proprietary trading inside large
+banks became impractical. A great desk, cut short.
+
+## eFX automated market making
+
+The final four years on the **eFX AMM desk** in London are where the
+HFT-market-making experience actually got real — the desk-side
+version of the same problem I would later run solo at Ainemox.
+
+- **Automated quoting** — pricing engines for spot FX with real-time
+  spread, skew, and mid-discovery from order flow.
+- **Auto-hedging** — algorithms that laid off inventory to the
+  inter-bank market against PnL and inventory-risk targets.
+- **Alpha signals** — from order flow, client-flow signatures, and
+  market microstructure (book imbalance, trade-size distributions,
+  cross-venue lead-lag).
+- **Online risk calibration** — adaptive risk-management algorithms
+  that re-tuned parameters live as market regime changed.
+
+## What it translates to
+
+Two specific things that carry cleanly into a systematic-fund seat:
+
+- **Production HFT engineering experience.** Eight years between the
+  AMM desk and Ainemox actually running live market-making systems
+  with skin in the game. Not just research — production discipline,
+  risk frameworks, and post-mortems.
+- **End-to-end view across the trade lifecycle.** Pricing, hedging,
+  alpha, risk, execution — I've owned all of them at one point or
+  another. It makes the "research-to-production" conversation much
+  easier.

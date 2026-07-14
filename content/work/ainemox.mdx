@@ -1,0 +1,88 @@
+---
+slug: ainemox
+title: Ainemox — a one-person HFT market-maker
+date: 2022-11-01
+meta: Founder, 2021–2022 · C, C++, Python, JavaScript, AWS
+summary: Solo-built and operated a fully automated HFT crypto market-making and options system across five exchanges — $1bn+ cumulative volume, sub-millisecond latency, pure C/C++ with no external libraries.
+---
+
+## Mandate
+
+Ainemox was a one-person crypto market-making firm I founded in late
+2021. The mandate was simple: build a competitive HFT market-making
+stack from zero, deploy it across the major crypto venues, and run it
+as a profitable proprietary business — research, engineering, ops, and
+risk all on one person.
+
+## Architecture
+
+Five independent processes, each compiled C/C++ with no external
+libraries:
+
+- **Algo Trading Server (C/C++).** The hot path — exchange
+  connectivity, market-data ingestion, quoting, order management,
+  inventory and risk controls. Sub-millisecond latency end-to-end;
+  throughput capable of 1000 trades/sec where the venue allowed it.
+  Launched per algo:
+
+  ```bash
+  ./algo_manager -a aggressive_market_maker_v2 -t BTC-USDT
+  ```
+
+- **WebSocket Server (C).** A deliberately tiny C broker sitting
+  between the algo processes and the human-facing apps. Routed
+  commands in, market data out, and copied everything to the
+  database server for later analysis.
+- **Web dashboard (JavaScript).** Internal-only. Live order-book and
+  own-order visualisation, performance analytics, and full control:
+  spin up algos, push parameter changes, kill switches.
+- **Telegram bot (Python).** Same control surface as the web
+  dashboard, reachable from a phone. Used for emergency intervention
+  and routine monitoring. Push a parameter change from mobile → live
+  in ~10 minutes.
+- **Monitoring servers (×2, independent).** Two redundant watchdogs.
+  Caught anything from process crashes to risk-limit breaches,
+  escalated by SMS / WhatsApp / Telegram, and could issue automatic
+  stop-and-flatten decisions in red-scenario conditions.
+
+## Venues
+
+Connected to **Binance, Bybit, BitMEX, Coinbase,** and **FTX** — spot
+and derivative books. Wrote each exchange adapter from scratch against
+the raw venue APIs: REST for control, native WebSockets for market
+data and order entry where supported.
+
+## Quoting and risk
+
+The market-making logic is a classical inventory-aware optimal-quoting
+problem. For inventory $q$, mid-price $S$, half-spread $\delta$, and
+reservation-price shift $\xi(q)$, quotes are placed at
+
+$$
+\text{bid} = S - \delta - \xi(q),
+\qquad
+\text{ask} = S + \delta - \xi(q),
+$$
+
+with $\xi(q)$ scaled by the risk-aversion parameter and the local
+realised volatility. Online calibration of $\delta$ and $\xi$ against
+fill-rate and adverse-selection metrics kept the system honest in
+regime changes.
+
+## Options on FTX MOVE
+
+Ran systematic intraday market making on FTX MOVE contracts — one-day
+maturity straddles that price the realised absolute move of BTC over
+the trading day. Quoting was driven by an implied-vol surface
+parameterisation and a Black-style pricing layer; intraday risk was
+managed against the realised path-dependent payoff.
+
+## What I learned
+
+- A surprising amount of HFT engineering is boring discipline —
+  reproducible builds, careful logging, idempotent restarts. The
+  microstructure was the easy part.
+- Two independent monitoring stacks felt paranoid until the day they
+  weren't. Highly recommended.
+- Mobile-first ops (Telegram bot) was the single largest
+  quality-of-life upgrade for a one-person desk.

@@ -1,7 +1,0 @@
-#!/bin/bash
-
-bundle install
-bundle clean --force
-bundle install
-bundle update
-
