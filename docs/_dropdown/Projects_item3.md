@@ -4,6 +4,7 @@ title: Automated Market Making
 description: Solo-built HFT crypto market-making stack — $1bn+ cumulative volume
 dropdown: Projects
 priority: 3
+usemathjax: true
 ---
 
 # Ainemox — Automated Market Making
