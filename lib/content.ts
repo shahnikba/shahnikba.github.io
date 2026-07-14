@@ -64,11 +64,11 @@ export function listAll(kind: Kind): Entry[] {
 
 export function formatDate(iso?: string): string {
   if (!iso) return "";
-  const [, month, day] = iso.split("-");
+  const [year, month, day] = iso.split("-");
   const months = [
     "Jan", "Feb", "Mar", "Apr", "May", "Jun",
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
   ];
   const m = months[parseInt(month, 10) - 1] ?? "";
-  return `${day} ${m}`;
+  return `${day} ${m} ${year}`;
 }

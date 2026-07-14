@@ -15,7 +15,7 @@ export function Ledger({ items }: { items: LedgerItem[] }) {
           key={item.href}
           className="grid items-baseline gap-x-7 py-2.5 max-[640px]:gap-x-5"
           style={{
-            gridTemplateColumns: "4.5rem 1fr",
+            gridTemplateColumns: "6.5rem 1fr",
             borderTop: i === 0 ? undefined : "1px solid var(--rule-soft)",
           }}
         >
