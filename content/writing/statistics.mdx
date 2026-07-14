@@ -1,0 +1,116 @@
+---
+slug: statistics
+title: Statistics — how I actually use it
+date: 2010-01-05
+summary: A practitioner's view of what parts of the statistics curriculum earn their keep in day-to-day work, and which parts you can safely skim.
+meta: Statistics · notes
+---
+
+I've used statistics in two adversarial-noise settings — financial
+markets and clinical data. What I actually reach for is a small subset
+of what any statistics course covers. This is a note about which parts
+of the curriculum earn their keep in practice.
+
+## The three habits that matter more than any technique
+
+**Look at the data first.** Every technique I know has been
+misapplied by someone who didn't first plot the data. A histogram, a
+scatter plot, and a time-series plot answer more questions than
+half the tests you'd otherwise reach for. Anscombe's quartet is
+overused as a warning, but the warning is real: summary statistics
+lie by omission.
+
+**Ask what would falsify the claim.** Statistics is a language for
+disciplined belief updating. Any time I compute a p-value, an
+effect size, or a confidence interval, I should be able to answer
+"what data would make me change my mind?". If I can't, I don't
+really have a statistical claim; I have a rhetorical one.
+
+**Prefer estimation over testing.** A hypothesis test tells you
+whether an effect is non-zero. An effect size with a confidence
+interval tells you *how big* and *how uncertain*. In almost every
+practical decision, the second is what you actually need. The
+p-value ritual survives because it's a defensible default; it's
+rarely the most useful answer.
+
+## Distributions — the small set worth internalising
+
+The heavy-hitters:
+
+- **Gaussian.** The one everyone uses correctly and incorrectly. Its
+  role in the central limit theorem is fundamental; its assumption
+  as a model for individual observations is often the mistake.
+- **Poisson.** For counts of independent events. The moment
+  independence fails — bursty arrivals, contagion — you need
+  negative binomial (over-dispersion) or a proper point-process model.
+- **Log-normal.** For strictly-positive quantities whose log is
+  Gaussian. Financial returns over long horizons; prices; sizes.
+- **Student's t / heavy-tailed families.** For return distributions
+  and any error term where extreme observations happen more often
+  than a Gaussian would predict. Finance without heavy tails is
+  finance with a hidden fragility.
+
+The lesson: know which distribution matches the data-generating
+process, not which one makes the math easier.
+
+## Regression — what to remember about the workhorse
+
+Linear regression is the most useful and most misused tool in the
+practitioner's kit. Two under-appreciated points:
+
+**Regression coefficients are conditional statements.** $\beta_j$
+tells you what $Y$ does when $X_j$ changes *holding all other
+covariates fixed*. Whether that's the causal effect depends on
+whether the "held-fixed" covariates form a valid adjustment set. In
+observational data, they rarely do without an explicit causal
+argument.
+
+**Diagnostics matter more than the fit.** Residual plots, leverage,
+Cook's distance, VIF for multicollinearity. A high $R^2$ with
+patterned residuals is worse than a lower $R^2$ with clean
+residuals — the second at least isn't lying to you about which
+model to trust.
+
+## Hypothesis testing — the parts that are actually useful
+
+Testing is *most* useful when the null is clean, the alternative is
+specific, and the decision has a real cost. A/B testing on a website
+fits this: null is "no difference in conversion rate", alternative
+is a specific business hypothesis, the decision is to ship or not.
+
+Testing is *least* useful in exploratory science, where a rejected
+null tells you something is happening but not what, and where
+multiple-comparison corrections take a large chunk of your power
+before you get to any specific claim.
+
+## Time series — where practitioners actually lose the most
+
+The single largest source of practical statistical errors I've seen
+is treating time-series data as if it were IID. Auto-correlation
+inflates apparent significance; standard errors are wrong; ordinary
+least squares standard errors on serially-correlated regressors are
+biased toward false positives.
+
+The minimum viable defence:
+
+- **Newey–West standard errors** for time-series regression.
+- **Block bootstrap** rather than IID bootstrap.
+- **Walk-forward validation** rather than random-split cross-validation
+  for any predictive task with a time index.
+- **Explicit tests** for stationarity (ADF, KPSS) and cointegration
+  (Engle–Granger, Johansen) when you're regressing one time series on
+  another.
+
+## Bayesian vs frequentist
+
+I use both. Frequentist tools are cleaner when the sample is large,
+the model is well-specified, and the question fits the null-hypothesis
+framing. Bayesian tools are cleaner when I have real prior
+information, when the sample is small, or when I want a full
+posterior distribution to reason with rather than a point estimate
+plus interval.
+
+The distinction matters less to me in day-to-day work than the
+educational literature suggests. What matters is which framing gives
+me the estimate I need with the right characterisation of
+uncertainty for the decision I'm about to make.

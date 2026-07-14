@@ -1,0 +1,114 @@
+---
+slug: causal-discovery
+title: Causal discovery — going from data to graph
+date: 2019-06-16
+summary: The reverse problem of causal inference: given data, can we recover the causal graph? Sometimes, under assumptions worth being explicit about.
+meta: Causality · notes
+---
+
+Standard causal inference starts with a DAG and asks *"given this
+graph, what can I identify?"* **Causal discovery** flips the question:
+*"given data, can I recover the graph?"*
+
+The answer is a qualified yes — under assumptions that are worth being
+explicit about, because they're the whole game.
+
+## The three assumption pillars
+
+Every discovery algorithm rests on some combination of:
+
+1. **Causal sufficiency.** All common causes of any two observed
+   variables are themselves observed. In other words: no hidden
+   confounders. This is the strong assumption almost no observational
+   dataset actually satisfies.
+2. **The causal Markov condition.** A variable is independent of its
+   non-descendants given its parents. This is what makes the graph
+   testable from data — it implies conditional independences you can
+   check.
+3. **Faithfulness.** All conditional independences in the data arise
+   from the graph structure, not from cancellations of specific
+   parameter values. Faithfulness rules out coincidences where two
+   effects cancel out exactly.
+
+Under all three, the graph implies a testable set of conditional
+independences, and any two graphs implying the same set are
+indistinguishable from data alone (they form a *Markov equivalence
+class*).
+
+## The PC algorithm — constraint-based
+
+The classic algorithm is **PC** (Peter Spirtes, Clark Glymour):
+
+1. Start with a complete undirected graph.
+2. For each pair $(X, Y)$, test conditional independence given
+   subsets of the neighbours. Remove edges where independence holds.
+3. Orient the surviving edges using colliders — if $X - Z - Y$ has
+   $X \perp Y$ unconditionally but $X \not\perp Y \mid Z$, then $Z$
+   is a collider ($X \rightarrow Z \leftarrow Y$).
+4. Propagate remaining orientations by rules that avoid creating new
+   colliders or cycles.
+
+The output is the *CPDAG* (completed partially-directed acyclic
+graph) representing the Markov equivalence class. Some edges have a
+direction, others don't — the latter are genuinely unidentifiable from
+data alone under the three assumptions.
+
+## Score-based approaches: GES and beyond
+
+An alternative family fits a score (BIC, penalised likelihood) over
+graph structures. **GES** (greedy equivalence search) moves through
+the space of Markov equivalence classes, adding then pruning edges.
+It's typically more stable than PC in finite samples because it uses
+all the data at once rather than a sequence of independence tests.
+
+Both approaches share the same fundamental identifiability limit: they
+return an equivalence class, not a unique graph.
+
+## LiNGAM — non-Gaussianity breaks the tie
+
+**LiNGAM** (Shimizu et al.) is the surprising result. If the data
+follow a linear structural model with non-Gaussian noise, the causal
+graph is *uniquely* identifiable — not just up to equivalence class.
+The magic is that under Gaussianity, all model directions produce the
+same joint distribution, but under non-Gaussianity they don't.
+
+Practical implication: if you're willing to assume linearity and
+non-Gaussianity, you can identify direction from observational data.
+This has been extended to nonlinear settings (additive noise models,
+post-nonlinear models) with related identifiability results.
+
+## Where causal discovery works, and where it doesn't
+
+**It works**: physical systems where causal sufficiency is plausible
+(gene regulatory networks with controlled experiments); large
+observational studies with careful backing from domain expertise;
+settings where you have partial expert knowledge to seed the
+algorithm.
+
+**It doesn't** in most economic and financial settings, because:
+
+- Hidden confounders are essentially guaranteed (markets have
+  latent factors we can't observe).
+- Faithfulness is often violated (equilibrium relationships create
+  cancellations by construction).
+- Time-series data breaks the standard IID setup and requires
+  specific extensions (Granger-causality is a related but distinct
+  concept).
+
+## What it's actually good for
+
+Even where you can't fully trust the output, causal discovery is
+useful in three ways:
+
+- **Hypothesis generation** — surfacing candidate causal structures
+  worth investigating with better data or experiments.
+- **Sanity checking prior beliefs** — if your subject-matter graph is
+  strongly inconsistent with the data's conditional-independence
+  pattern, one of them is wrong.
+- **Structuring assumptions** — running discovery forces you to make
+  the sufficiency and faithfulness assumptions explicit, which is
+  progress even when the conclusions are uncertain.
+
+The lesson is the same as elsewhere in causal inference: the value
+isn't necessarily a single answer, it's clarity about what you'd need
+to change your mind.

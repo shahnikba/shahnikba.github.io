@@ -2,7 +2,7 @@
 slug: variational-inference
 title: Variational inference — a working intuition
 date: 2019-06-06
-summary: When exact posterior inference is intractable, variational inference turns it into an optimisation problem instead.
+summary: When exact posterior inference is intractable, variational inference turns it into an optimisation problem instead — and gets you a lower bound on the marginal likelihood as a bonus.
 meta: Machine learning · notes
 ---
 
@@ -11,21 +11,20 @@ always intractable for interesting models. Variational inference is
 the pragmatic answer: replace the intractable integral with an
 **optimisation problem**.
 
-The move is: pick a family $\mathcal{Q}$ of tractable distributions
+The move is to pick a family $\mathcal{Q}$ of tractable distributions
 $q(z)$ and find the member of $\mathcal{Q}$ closest to the true
 posterior in KL divergence:
 
 $$
-q^{*}(z) = \arg\min_{q \in \mathcal{Q}} \; \mathrm{KL}\big[q(z) \,\|\, p(z \mid x)\big].
+q^{*}(z) = \arg\min_{q \in \mathcal{Q}} \; \mathrm{KL}\!\left[q(z) \,\|\, p(z \mid x)\right].
 $$
 
-The KL divergence still involves the intractable posterior. The
-elegant part: minimising this KL is equivalent to *maximising* the
-**evidence lower bound** (ELBO), which only involves quantities we
-can compute:
+The KL still involves the intractable posterior, but the elegant part
+is that minimising it is equivalent to *maximising* the **evidence
+lower bound** (ELBO), which involves only quantities we can compute:
 
 $$
-\mathrm{ELBO}(q) = \mathbb{E}_{q(z)}\big[\log p(x, z)\big] - \mathbb{E}_{q(z)}\big[\log q(z)\big].
+\mathrm{ELBO}(q) = \mathbb{E}_{q(z)}\!\left[\log p(x, z)\right] - \mathbb{E}_{q(z)}\!\left[\log q(z)\right].
 $$
 
 Now you have a well-posed optimisation. Everything downstream —
@@ -33,5 +32,102 @@ mean-field VI, black-box VI, VAEs — is a specific choice of
 $\mathcal{Q}$ and a specific way to compute or estimate the ELBO
 gradient.
 
-_More on the reparameterisation trick and stochastic VI in the next
-note._
+## The KL asymmetry matters
+
+Variational inference minimises $\mathrm{KL}(q \| p)$ — the "reverse"
+KL. This has a particular geometric consequence: the optimal $q$ is
+**mode-seeking**. It concentrates on one mode of the true posterior
+and ignores others rather than smearing itself across multiple modes.
+If the true posterior is multimodal, standard VI misses the
+multimodality entirely.
+
+The "forward" KL, $\mathrm{KL}(p \| q)$, is **mode-covering** — it
+would penalise $q$ heavily for putting zero probability where $p$ has
+support, forcing $q$ to spread across modes. It's what expectation
+propagation minimises, and what you'd get from importance sampling
+with $p$ as the target.
+
+Neither direction is uniformly better. Mode-seeking gives you cleaner
+posteriors on unimodal problems and often better predictive
+performance; mode-covering gives you honest coverage on multimodal
+problems. Which one you want depends on what you'll do with the
+posterior.
+
+## Mean-field VI — the classical special case
+
+The simplest variational family is **mean-field**: assume the
+posterior factorises over dimensions:
+
+$$
+q(z_1, \ldots, z_D) = \prod_{i=1}^{D} q_i(z_i).
+$$
+
+For models with conjugate exponential-family conditionals, coordinate-
+ascent VI gives clean closed-form updates for each $q_i$, cycling
+through dimensions like Gibbs sampling but for parameters of $q$
+rather than samples.
+
+Mean-field is fast and often accurate enough for descriptive purposes.
+Its systematic failure mode is *variance underestimation* — by
+assuming independence, it can't represent posterior correlations, and
+tends to concentrate the marginals too tightly around the mode. If you
+compare mean-field VI posteriors to MCMC posteriors, VI's are almost
+always narrower.
+
+## Black-box VI — the deep-learning fix
+
+For non-conjugate models (which is almost anything interesting),
+closed-form coordinate ascent isn't available. **Black-box VI**
+(Ranganath et al.) uses stochastic gradient estimates of the ELBO,
+plugging in whatever $q$ family you like and any $p(x, z)$ you can
+evaluate.
+
+The ELBO gradient via the log-derivative trick:
+
+$$
+\nabla_{\phi} \mathrm{ELBO}(q_\phi) \;=\; \mathbb{E}_{q_\phi(z)}\!\left[\big(\log p(x, z) - \log q_\phi(z)\big) \nabla_\phi \log q_\phi(z)\right].
+$$
+
+Estimate with samples. High variance in general; every subsequent
+method (control variates, Rao-Blackwellisation, reparameterisation) is
+some strategy for reducing that variance.
+
+## The reparameterisation trick — VAEs
+
+For continuous $z$ and reparameterisable $q$ families, there's a
+lower-variance alternative. If we can write $z = g_\phi(\epsilon)$ for
+some noise $\epsilon \sim p(\epsilon)$ independent of $\phi$ (e.g.,
+$z = \mu_\phi + \sigma_\phi \odot \epsilon$ for Gaussian $q$), then
+
+$$
+\nabla_\phi \mathbb{E}_{q_\phi(z)}[f(z)] \;=\; \mathbb{E}_{p(\epsilon)}[\nabla_\phi f(g_\phi(\epsilon))].
+$$
+
+The gradient goes *through* the sampling step because the randomness
+is external. This gives dramatically lower-variance estimators, which
+is what makes variational autoencoders trainable at scale.
+
+The VAE is exactly mean-field VI over an amortised $q$ family:
+instead of learning $q_i$ per data point $x_i$, learn a single
+"encoder" $q_\phi(z \mid x)$ that outputs the variational parameters
+as a neural-network function of $x$. Amortisation trades approximation
+error (a fixed-capacity encoder is worse than dedicated variational
+parameters per point) for enormous computational savings.
+
+## When VI is the wrong tool
+
+Three settings where I'd reach for MCMC (or a diffusion-based
+alternative) instead:
+
+- **Multimodal posteriors** where all modes matter.
+- **Small models with well-defined priors** where exact HMC-quality
+  inference is affordable and the certainty premium justifies the
+  compute.
+- **Model comparison via marginal likelihood** — VI gives you a lower
+  bound on $\log p(x)$, not the marginal likelihood itself.
+  Bridge sampling or nested sampling are more honest.
+
+For deep generative models on high-dimensional data (images, audio,
+scientific fields), VI variants remain competitive because the
+alternatives don't scale. But it's worth remembering what you gave
+up when you chose the ELBO.

@@ -1,0 +1,110 @@
+---
+slug: stochastic-gradient-descent
+title: Stochastic gradient descent — noise as a feature
+date: 2019-06-10
+summary: Replacing the exact gradient with a noisy mini-batch estimate makes each step cheap and, unexpectedly, often generalises better than the full-batch alternative.
+meta: Optimisation · notes
+---
+
+Full-batch gradient descent uses the exact gradient of the average
+loss. **Stochastic gradient descent** uses an unbiased noisy
+estimate, computed on a mini-batch of examples, and updates parameters
+before finishing the epoch.
+
+The trade looks like a compromise. It's often better than the
+non-compromise.
+
+## The update
+
+For a training loss $f(\theta) = \frac{1}{N}\sum_{i=1}^{N} f_i(\theta)$
+and a mini-batch $B_t \subset \{1, \ldots, N\}$ of size $|B_t| = b$
+sampled i.i.d.:
+
+$$
+\theta_{t+1} \;=\; \theta_t - \eta_t \cdot \frac{1}{b} \sum_{i \in B_t} \nabla f_i(\theta_t).
+$$
+
+The batch-averaged gradient is an unbiased estimator of the true
+gradient with variance $\sigma^2 / b$.
+
+## Why the noise doesn't kill it
+
+Naïvely you'd expect the noise to prevent convergence. And it does
+prevent convergence to a point — SGD with a fixed step size oscillates
+in a neighbourhood of the minimum whose diameter scales with $\eta
+\sigma$. That's why you need a decreasing step-size schedule if you
+want asymptotic convergence.
+
+The Robbins–Monro conditions give the sufficient recipe:
+
+$$
+\sum_{t=1}^{\infty} \eta_t = \infty, \qquad \sum_{t=1}^{\infty} \eta_t^{2} < \infty.
+$$
+
+Any schedule that decays slower than $1/t$ but faster than $1/\sqrt{t}$
+works. In deep learning practice, $\eta_t$ is usually a step-wise
+decay: constant for a while, then divided by 10 at milestones. It's
+not elegant but it works.
+
+## The variance-vs-cost trade
+
+Doubling the batch size halves the gradient variance but doubles the
+per-step compute. At fixed total compute budget, larger batches let
+you take fewer, higher-quality steps; smaller batches let you take
+more, noisier steps.
+
+In practice the trade is not symmetric:
+
+- **Very small batches** (e.g., $b=1$, true SGD) are noisy enough that
+  you're mostly wandering. Convergence is slow per step and per
+  wall-clock.
+- **Very large batches** (approaching full-batch) can *generalise*
+  worse in neural networks. The "large-batch generalisation gap" is
+  well-documented empirically; the explanation is a live research
+  area.
+- **Moderate batches** (typically 32–1024 for deep learning; smaller
+  for smaller models) are the sweet spot.
+
+## Why SGD generalises better than GD
+
+This is the surprising empirical finding. On overparameterised neural
+networks, SGD systematically finds solutions that generalise better
+than full-batch gradient descent — even when both reach the same
+training loss.
+
+The prevailing explanation: SGD's noise acts as an *implicit
+regulariser*, biasing the optimiser toward flat minima. Flat minima
+are more robust to parameter perturbations, which correlates with
+better test-set performance. Sharp minima found by full-batch
+methods fit the training data as well but generalise worse.
+
+You can view SGD as approximately solving a modified objective that
+penalises curvature — the effective regularisation strength scales
+with $\eta / b$. This is why larger batch sizes require careful
+learning-rate tuning to recover the generalisation of smaller
+batches.
+
+## Practical checklist for SGD in the wild
+
+- **Shuffle** the data at the start of each epoch. Without shuffling,
+  SGD's noise becomes correlated across steps and the theoretical
+  guarantees break.
+- **Warm up** the learning rate for the first few hundred steps —
+  linearly ramp from zero to the target rate. Prevents early
+  divergence when the model is at its most fragile.
+- **Decay** the learning rate on plateaus or at pre-set milestones.
+- **Momentum** is a near-free upgrade — always on by default in
+  practice.
+
+## What replaced it (partially)
+
+The Adam family displaced SGD in many deep-learning workflows
+because it's more forgiving on the learning-rate hyperparameter. But
+for problems where you can afford to tune, well-configured SGD with
+momentum often matches or beats Adam on generalisation — most
+famously in ResNet-style vision architectures. Which one wins depends
+on the specific setup; both are worth trying.
+
+The underlying point: SGD isn't a compromise on gradient descent.
+It's a genuinely different algorithm with an implicit regularisation
+that often works in your favour.

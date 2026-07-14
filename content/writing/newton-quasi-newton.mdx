@@ -1,0 +1,116 @@
+---
+slug: newton-quasi-newton
+title: Newton and quasi-Newton methods
+date: 2019-06-09
+summary: Using second-order curvature to take smarter steps. When the Hessian is worth the compute, and how BFGS approximates it cheaply.
+meta: Optimisation · notes
+---
+
+Gradient descent uses only first-order information — the local slope
+of the loss. **Newton's method** uses the second-order Hessian too,
+which lets it take fundamentally smarter steps. **Quasi-Newton**
+methods approximate the Hessian at a fraction of the cost. Both
+matter, both have limits.
+
+## Newton's method
+
+The update, derived from a local quadratic approximation:
+
+$$
+\theta_{t+1} \;=\; \theta_t - \left[\nabla^{2} f(\theta_t)\right]^{-1} \nabla f(\theta_t).
+$$
+
+Where gradient descent's step direction is just $-\nabla f$, Newton
+pre-multiplies by the inverse Hessian. Geometrically it rescales the
+gradient by curvature: dimensions with large curvature get small
+steps, flat directions get large steps.
+
+**Convergence.** Near a strict local minimum where the Hessian is
+positive definite and Lipschitz, Newton converges *quadratically* —
+the error at step $t+1$ scales as the square of the error at step
+$t$. In practice this means once you're close, a handful of Newton
+steps drives the error to machine precision.
+
+**Cost.** Each step requires forming the Hessian ($O(n^2)$ storage,
+$O(n^2)$ to $O(n^3)$ to compute) and inverting it ($O(n^3)$). For
+$n = 10^6$ parameter neural networks, this is completely out of the
+question. For $n = 100$ classical problems, Newton is often the right
+choice.
+
+## The quasi-Newton idea
+
+If you can't afford the true Hessian, approximate it. **Quasi-Newton**
+methods build an approximation $B_t \approx \nabla^{2} f(\theta_t)$
+using only gradients, updating it after each step.
+
+The core insight is the *secant condition*:
+
+$$
+B_{t+1} \, s_t = y_t, \qquad s_t = \theta_{t+1} - \theta_t, \qquad y_t = \nabla f(\theta_{t+1}) - \nabla f(\theta_t).
+$$
+
+This says: whatever the true Hessian is, the change in gradient over
+the step is approximately the Hessian times the step. Any $B_{t+1}$
+satisfying this is a plausible Hessian approximation.
+
+## BFGS — the standard quasi-Newton
+
+**BFGS** (Broyden–Fletcher–Goldfarb–Shanno) is the workhorse update
+rule. It maintains $B_t^{-1}$ directly — avoiding the matrix inverse
+at every step — via a rank-two update:
+
+$$
+B_{t+1}^{-1} = \left(I - \frac{s_t y_t^{T}}{y_t^{T} s_t}\right) B_t^{-1} \left(I - \frac{y_t s_t^{T}}{y_t^{T} s_t}\right) + \frac{s_t s_t^{T}}{y_t^{T} s_t}.
+$$
+
+It's a mouthful, but the properties are what matter: preserves
+symmetry and positive-definiteness, satisfies the secant condition,
+and converges super-linearly under standard assumptions.
+
+## L-BFGS — when memory matters
+
+Full BFGS stores an $n \times n$ inverse-Hessian approximation. For
+large $n$, that's prohibitive. **L-BFGS** (Limited-memory BFGS)
+maintains only the last $m$ pairs $(s_i, y_i)$ (typical $m = 5$ to
+$20$) and reconstructs the effect of $B_t^{-1} \nabla f$ implicitly
+via a two-loop recursion. Storage is $O(mn)$, cost per step is
+$O(mn)$.
+
+L-BFGS is the standard second-order method for medium-scale problems
+(thousands to millions of parameters). It's the default optimiser in
+scipy and R for a good reason.
+
+## Where quasi-Newton loses to first-order methods
+
+Two settings.
+
+**Stochastic problems.** BFGS assumes the gradients are exact. In
+mini-batch settings, the secant condition is corrupted by noise, and
+the Hessian approximation degrades. Straightforward stochastic
+variants exist (SGD + BFGS-style updates) but they don't beat well-
+tuned SGD reliably. This is the topic of the stochastic quasi-Newton
+note.
+
+**Very large problems.** For $n \gg 10^{6}$, even L-BFGS's $O(mn)$
+memory is expensive, and the sequential dependence in the two-loop
+recursion doesn't parallelise as well as embarrassingly parallel
+gradient computations. Modern deep-learning training uses first-order
+methods almost exclusively for this reason.
+
+## When to reach for Newton or quasi-Newton
+
+Rule of thumb: use them when the problem is small enough that
+$O(n^{2})$ storage is comfortable, the gradients are exact (batch
+mode, not mini-batch), and the objective is smooth. Classical
+scientific computing, calibration problems in quant finance,
+maximum-likelihood fits for low-dimensional models — all natural
+targets.
+
+Use first-order methods when the problem is stochastic or huge, or
+when convergence to machine precision doesn't matter (deep learning
+is a good example: you want a solution that generalises, not one
+that's exactly at the training-loss minimum).
+
+The interesting middle ground is where the two ideas mix — natural
+gradient, K-FAC, Sophia — that's the stochastic-quasi-Newton
+territory.

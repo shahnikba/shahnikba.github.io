@@ -1,0 +1,112 @@
+---
+slug: gradient-descent
+title: Gradient descent — the workhorse
+date: 2019-06-11
+summary: The foundation of numerical optimisation. When it works, when it doesn't, and why it's still the default starting point 200 years after Cauchy.
+meta: Optimisation · notes
+---
+
+Almost every model training loop is some flavour of gradient descent.
+It's the workhorse. Understanding why the simple version works — and
+where it breaks — is the price of entry for everything else.
+
+## The update
+
+Given a differentiable objective $f: \mathbb{R}^n \to \mathbb{R}$,
+gradient descent iterates
+
+$$
+\theta_{t+1} \;=\; \theta_t - \eta \, \nabla f(\theta_t)
+$$
+
+where $\eta > 0$ is the step size (learning rate). The intuition: move
+in the direction of steepest descent, controlled by $\eta$.
+
+## Why it converges (when it does)
+
+For convex $f$ with $L$-Lipschitz gradient, a fixed step size
+$\eta = 1/L$ gives a convergence rate of
+
+$$
+f(\theta_t) - f(\theta^{*}) \;\leq\; \frac{L \|\theta_0 - \theta^{*}\|^{2}}{2t}.
+$$
+
+That's $O(1/t)$ — sub-linear but reliable. For strongly convex $f$
+with condition number $\kappa = L/\mu$, the rate improves to linear:
+
+$$
+\|\theta_t - \theta^{*}\|^{2} \;\leq\; \left(1 - \frac{1}{\kappa}\right)^{t} \|\theta_0 - \theta^{*}\|^{2}.
+$$
+
+The condition number $\kappa$ is the ratio of the largest to smallest
+Hessian eigenvalue — it measures how "elongated" the loss landscape
+is. High $\kappa$ means slow convergence, and this is where the
+elaborate methods start earning their keep.
+
+## The step-size problem
+
+The theory gives you $\eta = 1/L$, but you rarely know $L$ in
+practice. Too large a step causes divergence; too small wastes
+iterations. Three practical strategies:
+
+- **Line search.** At each step, search for an $\eta$ that gives
+  sufficient decrease (Armijo/Wolfe conditions). Robust but expensive
+  per step.
+- **Decay schedules.** Start with a large $\eta$, shrink it over
+  training (e.g., $\eta_t = \eta_0 / (1 + \alpha t)$ or step decays at
+  milestones). Cheap and dominant in deep learning practice.
+- **Adaptive per-parameter rates.** AdaGrad, RMSProp, Adam. Different
+  parameters get different effective step sizes based on their gradient
+  history.
+
+## Where the simple version breaks
+
+Two failure modes matter in practice.
+
+**Ill-conditioning.** For elongated loss surfaces (very different
+eigenvalues along different directions), gradient descent zig-zags
+across the narrow valley and inches down the long axis. Slow. The
+answer is either a preconditioner (multiply the gradient by
+$H^{-1}$-ish matrices — Newton, quasi-Newton) or an adaptive method
+that approximates this per-dimension.
+
+**Non-convexity.** In neural networks the loss surface is
+non-convex; gradient descent converges to a local minimum, saddle
+point, or high-loss region depending on initialisation and step size.
+Empirically, the local minima found by SGD in overparameterised
+networks tend to generalise well — but this is empirical, not theory.
+Saddle points were feared for a while but turn out to be escaped
+easily by any method with a bit of noise (SGD does this for free).
+
+## Momentum — the cheapest useful upgrade
+
+The next natural step: accumulate a velocity vector.
+
+$$
+v_{t+1} = \beta v_t + \nabla f(\theta_t), \qquad \theta_{t+1} = \theta_t - \eta \, v_{t+1}.
+$$
+
+Typical $\beta = 0.9$. Momentum smooths out zig-zagging in narrow
+valleys and speeds convergence on ill-conditioned problems.
+Practically, plain SGD with momentum is often within striking distance
+of adaptive methods on well-tuned deep-learning problems — and easier
+to reason about.
+
+**Nesterov's variant** evaluates the gradient at the
+"look-ahead" point $\theta_t - \eta \beta v_t$ rather than
+$\theta_t$. Slightly better theoretical rates for smooth convex
+problems and often a small practical improvement.
+
+## Why it's still the default
+
+For all the elaborate optimisers in the literature, gradient descent
+(with momentum, with a schedule) remains the dominant tool for
+large-scale problems for one boring reason: **cheap iterations**. Each
+step needs only a gradient — no matrix inverses, no factorisations. On
+modern hardware you can afford far more steps than you can afford
+Hessian evaluations, and often that trade wins even when the per-step
+progress is worse.
+
+The lesson: understand what makes gradient descent slow (ill-conditioning)
+and reach for the fancy methods when that's actually the bottleneck.
+Otherwise, GD with a well-tuned schedule is hard to beat.

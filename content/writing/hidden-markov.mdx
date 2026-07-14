@@ -11,14 +11,134 @@ hidden states you cannot observe, and an emission distribution that
 generates observations conditional on the current hidden state. You
 see the emissions; you infer the states.
 
-Three canonical questions:
+Concretely, an HMM is defined by:
 
-1. **Evaluation.** Given a model and a sequence of observations, how
-   probable is the sequence? Solved by the **forward algorithm** in
-   $O(N^2 T)$ time.
-2. **Decoding.** What's the most likely sequence of hidden states?
-   Solved by **Viterbi**.
-3. **Learning.** Given only observations, estimate the model
-   parameters. Solved by **Baum–Welch** (an instance of EM).
+- A set of hidden states $\{1, \ldots, K\}$
+- A **transition matrix** $A_{ij} = P(z_{t+1} = j \mid z_t = i)$
+- An **initial distribution** $\pi_i = P(z_1 = i)$
+- **Emission distributions** $B_i(x) = P(x_t \mid z_t = i)$ —
+  Gaussian, discrete, or whatever your observations look like
 
-_Sketching out the full derivation. More to come._
+That's it. The joint density factorises as
+
+$$
+P(x_{1:T}, z_{1:T}) = \pi_{z_1} \prod_{t=1}^{T} B_{z_t}(x_t) \prod_{t=1}^{T-1} A_{z_t, z_{t+1}}.
+$$
+
+## The three canonical questions
+
+**1. Evaluation.** Given a model $\lambda = (A, B, \pi)$ and observation
+sequence $x_{1:T}$, what is $P(x_{1:T} \mid \lambda)$?
+
+Naïve marginalisation would sum over $K^T$ hidden-state sequences.
+The **forward algorithm** does it in $O(K^2 T)$ via dynamic programming:
+
+$$
+\alpha_t(i) = P(x_{1:t}, z_t = i \mid \lambda),
+$$
+
+$$
+\alpha_1(i) = \pi_i B_i(x_1),
+$$
+
+$$
+\alpha_{t+1}(j) = B_j(x_{t+1}) \sum_i \alpha_t(i) A_{ij}.
+$$
+
+The marginal likelihood is $P(x_{1:T} \mid \lambda) = \sum_i \alpha_T(i)$.
+
+**2. Decoding.** What's the most likely sequence of hidden states?
+This is the **Viterbi algorithm** — same shape as forward, but with
+$\max$ instead of $\sum$:
+
+$$
+\delta_t(i) = \max_{z_{1:t-1}} P(x_{1:t}, z_{1:t-1}, z_t = i \mid \lambda),
+$$
+
+$$
+\delta_{t+1}(j) = B_j(x_{t+1}) \max_i \big[\delta_t(i) A_{ij}\big].
+$$
+
+Track back-pointers to recover the argmax sequence. Also $O(K^2 T)$.
+
+**3. Learning.** Given only observations, estimate $\lambda = (A, B, \pi)$.
+This is **Baum–Welch**, an instance of EM.
+
+- **E-step**: use forward-backward to compute the posterior over
+  hidden states,
+  $$\gamma_t(i) = P(z_t = i \mid x_{1:T}, \lambda),$$
+  and the two-slice posteriors $\xi_t(i, j) = P(z_t = i, z_{t+1} = j
+  \mid x_{1:T}, \lambda)$.
+- **M-step**: re-estimate the parameters by weighted MLE using
+  $\gamma$ and $\xi$ as the sufficient statistics.
+
+Converges to a local optimum of the observed-data likelihood; sensitive
+to initialisation.
+
+## Backward and forward-backward
+
+The **backward algorithm** is the sibling of forward:
+
+$$
+\beta_t(i) = P(x_{t+1:T} \mid z_t = i, \lambda),
+$$
+
+$$
+\beta_T(i) = 1,
+$$
+
+$$
+\beta_t(i) = \sum_j A_{ij} B_j(x_{t+1}) \beta_{t+1}(j).
+$$
+
+The state posterior at any timestep combines both:
+
+$$
+\gamma_t(i) = \frac{\alpha_t(i) \beta_t(i)}{P(x_{1:T} \mid \lambda)}.
+$$
+
+This is the "forward-backward" step used inside Baum–Welch's E-step
+and inside standard smoothing for online HMMs.
+
+## When to use HMMs today
+
+HMMs were the workhorse of speech recognition for decades, until
+sequence-to-sequence neural networks displaced them around 2015. In
+pure prediction accuracy on rich data, deep sequence models win.
+HMMs still earn their keep in specific settings:
+
+- **Small labelled datasets** where a low-parameter model with strong
+  inductive bias generalises better than a deep network. Bioinformatics
+  is full of these.
+- **Interpretability of latent structure.** HMMs give you an explicit
+  posterior over discrete states — very useful if the "state" is
+  meaningful (regime detection in finance, patient-state modelling in
+  clinical trajectories).
+- **Streaming / online settings** where the forward algorithm's
+  per-timestep constant cost is exactly what you want.
+
+## The finance connection — regime-switching models
+
+Regime-switching models (Hamilton, 1989) are HMMs with continuous
+emissions used to identify latent market regimes. The states might
+correspond to "high volatility", "trending", "range-bound" — the
+model doesn't label them for you; you interpret the fitted states
+post hoc.
+
+Practically these models are noisier than they look — the state
+posterior is often diffuse, regime boundaries shift as you add data,
+and out-of-sample regime prediction is difficult. But as a
+descriptive tool for characterising historical regimes, they're
+useful, and the framework generalises cleanly to state-space
+models with continuous states (Kalman filters), which are more
+directly useful.
+
+## What HMMs teach beyond HMMs
+
+The forward-backward algorithm is the discrete-state ancestor of the
+Kalman filter (continuous linear-Gaussian states) and of belief
+propagation on graphs generally. Once you've internalised the
+message-passing pattern in HMMs, both Kalman filtering and modern
+graphical-model inference feel like variations on the same theme.
+That transferable intuition is why HMMs deserve a first-class place
+in the curriculum long after they've stopped being state-of-the-art.

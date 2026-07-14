@@ -1,0 +1,111 @@
+---
+slug: stochastic-quasi-newton
+title: Stochastic quasi-Newton — combining curvature with noise
+date: 2019-06-08
+summary: BFGS-style curvature information meets stochastic mini-batch training. Harder than it looks; less popular than it should be.
+meta: Optimisation · notes
+---
+
+Quasi-Newton methods (BFGS, L-BFGS) work brilliantly when gradients are
+exact. Stochastic gradient descent works brilliantly at scale. Combining
+them — using curvature information *and* mini-batches — turns out to be
+one of the harder problems in optimisation.
+
+The prize: preconditioned steps that converge in fewer iterations than
+SGD while remaining scalable. The reality: getting this to work
+reliably has taken decades.
+
+## Why the naïve combination fails
+
+Take BFGS and plug in a stochastic gradient. Two things go wrong.
+
+**The secant condition breaks.** BFGS updates $B_{t+1}^{-1}$ using
+$s_t = \theta_{t+1} - \theta_t$ and $y_t = \nabla f_{B_t}(\theta_{t+1}) - \nabla f_{B_t}(\theta_t)$.
+When the gradients come from *different* mini-batches at the two
+points, $y_t$ mixes actual curvature information with sampling noise.
+The Hessian approximation drifts unpredictably.
+
+**Positive-definiteness is lost.** BFGS preserves the positive-definite
+property of $B_t^{-1}$ only when $s_t^{T} y_t > 0$ — the curvature
+condition. Noisy gradients can violate this, at which point the
+approximation stops being a valid preconditioner and can send you in
+directions that make the loss worse.
+
+## Two families of fixes
+
+**Same-batch differences.** Compute both endpoint gradients on the
+*same* mini-batch, so $y_t$ reflects real curvature rather than
+sampling variation. Every $k$ steps do a "curvature step": form
+$(s_t, y_t)$ on a shared batch, update the approximation. This
+family includes SGD-QN and its descendants. Works, but the extra
+gradient evaluation and the coordination requirement chip away at the
+per-step efficiency SGD gives you for free.
+
+**Fisher-information approximations.** Instead of approximating the
+Hessian, approximate the Fisher information matrix — which for many
+losses is a good proxy for curvature and has structural properties
+(block-diagonal-ish across layers of a neural network) that make it
+cheap. **K-FAC** (Kronecker-factored approximate curvature) is the
+canonical example: it approximates the Fisher's block structure with
+Kronecker products and inverts each block cheaply. Used in some
+production settings, especially for reinforcement-learning training
+where sample efficiency matters.
+
+## Natural gradient — the parent idea
+
+**Natural gradient** (Amari) is the older, cleaner formulation. If
+you view the parameter space as a Riemannian manifold with the
+Fisher information as its metric, the "steepest descent" direction is
+not $\nabla f$ but $F^{-1} \nabla f$ where $F$ is the Fisher matrix.
+This is *reparameterisation-invariant* — the update doesn't depend on
+how you happened to parameterise the model — a property that has
+real practical value when models are heavily overparameterised.
+
+Every practical stochastic quasi-Newton method is, in some sense, an
+approximation to natural gradient. The engineering trick is how to
+make $F^{-1}$ tractable.
+
+## Recent momentum in the area
+
+Two lines of work worth noting.
+
+**Sophia** (2023) uses a diagonal Hessian estimate via Hutchinson's
+estimator and shows serious speedups on GPT-scale language model
+training — a rare regime where anyone has bothered to try
+second-order methods at scale. The catch: it requires an extra
+backward pass every few steps.
+
+**Shampoo** (2018 onward) is another Fisher-approximation family,
+this time using left- and right-side preconditioners. Grinds
+through recent large-model benchmarks alongside Sophia and K-FAC,
+often with wall-clock wins over Adam in the compute regimes where
+extra per-step work is affordable.
+
+## Why they're still not the default
+
+Adam variants dominate deep-learning practice for a boring reason:
+they're forgiving. You can grab defaults, plug them in, and get a
+result within a factor of two of the best-tuned version. Every
+second-order method — natural gradient, K-FAC, L-BFGS variants — is
+more sensitive to hyperparameters (particularly the damping term)
+and has more room to fail silently. In a world where compute is
+cheap and human tuning is expensive, that trade favours the simpler
+methods.
+
+The re-emergence of second-order methods at frontier scale is the
+first signal that the trade might be shifting: when a single training
+run costs millions of dollars, a 30% speed-up justifies a lot of
+hyperparameter tuning. Expect this to keep evolving.
+
+## The practical takeaway
+
+- **Medium-scale, batch-mode problems** (calibration, maximum
+  likelihood): use L-BFGS. It's usually the right answer and it's in
+  every standard library.
+- **Large-scale stochastic training** (deep learning): default to
+  Adam or well-tuned SGD-with-momentum unless you have a specific
+  reason to try K-FAC, Sophia, or Shampoo — and if you do, budget
+  time for tuning the damping.
+- **Reinforcement learning and policy-gradient methods**: natural
+  gradient / K-FAC-style methods are genuinely worth trying because
+  the sample-efficiency wins are large.

@@ -1,0 +1,96 @@
+---
+slug: causality-intro
+title: Causality — an introduction for people who already do statistics
+date: 2019-06-19
+summary: Why correlation isn't enough, why regression can't answer causal questions, and Pearl's three-rung ladder for organising the whole field.
+meta: Causality · notes
+---
+
+Every applied statistician learns "correlation isn't causation" as a
+warning. Causal inference is what happens when you take that warning
+seriously and ask *what would be enough*.
+
+## Where regression stops
+
+A textbook regression model $Y = \beta_0 + \beta_1 X + \varepsilon$
+identifies the best linear predictor of $Y$ given $X$. It says nothing
+— on its own — about what would happen to $Y$ if we *changed* $X$.
+
+That distinction is easy to miss because in a properly randomised
+experiment, the two coincide: because $X$ was assigned independently of
+everything else, the observed conditional mean $E[Y \mid X]$ equals the
+interventional mean $E[Y \mid do(X)]$. But in observational data — the
+kind almost everyone actually has — they don't.
+
+## Pearl's three rungs
+
+Judea Pearl organises the whole territory into a ladder with three
+rungs, each strictly stronger than the one below:
+
+1. **Association.** $P(y \mid x)$ — what I see about $y$ when I observe
+   $x$. Regression, classification, standard supervised learning.
+2. **Intervention.** $P(y \mid do(x))$ — what I would see about $y$ if
+   I *forced* $X$ to take value $x$, breaking the mechanism that
+   normally generates $X$. RCTs, A/B tests, and any properly-adjusted
+   observational analysis live here.
+3. **Counterfactuals.** $P(y_x \mid x', y')$ — what *would have*
+   happened to a specific unit if $X$ had been $x$, given that we
+   actually observed $X = x'$ and $Y = y'$. The most useful rung for
+   post-hoc decision analysis, and the hardest to identify.
+
+The rungs are cumulative. You cannot answer a rung-2 question with
+rung-1 data alone — you need extra structure (a graph, an experiment,
+or explicit assumptions). Rung 3 needs strictly more than rung 2.
+
+## The tool: causal DAGs
+
+The concrete apparatus is a **directed acyclic graph** (DAG) whose
+nodes are variables and whose edges point from cause to effect. Given
+such a graph, the graph itself tells you what you need to control for
+to identify a causal effect — that's what the backdoor and frontdoor
+criteria do.
+
+The graph doesn't come from the data. It comes from your subject-matter
+understanding of how the variables generate each other. This is the
+part that makes some statisticians uncomfortable: causal inference
+requires structural assumptions you cannot fully verify. But the
+alternative — pretending you can extract causation from correlation
+alone — is not neutrality; it's a hidden assumption that all
+associations happen to be causal.
+
+## Why regression alone can be misleading
+
+The canonical failure mode is the **confounder**:
+
+$$
+Z \rightarrow X, \qquad Z \rightarrow Y
+$$
+
+If $Z$ affects both the treatment $X$ and the outcome $Y$, then the
+observed correlation between $X$ and $Y$ mixes the causal effect of $X$
+on $Y$ with the spurious association induced by $Z$. Regressing $Y$ on
+$X$ alone gives you a biased causal estimate. Regressing $Y$ on both
+$X$ and $Z$ gives you the right one — but *only if you knew to include*
+$Z$, and *only if* $Z$ is measured.
+
+The other canonical failure is the **collider**:
+
+$$
+X \rightarrow Z, \qquad Y \rightarrow Z
+$$
+
+If $Z$ is a common effect of $X$ and $Y$, then conditioning on $Z$
+*introduces* a spurious association between $X$ and $Y$ where none
+existed. This is why "controlling for everything you can measure" is
+not a safe strategy — some controls are actively harmful. You need the
+graph to tell them apart.
+
+## Why I keep coming back to it
+
+Every serious question about *what to do* is a causal question, not a
+predictive one. In trading: what happens to my P&L if I *change* my
+execution style? In healthcare: what happens to a patient's outcome if
+I *change* their treatment? Prediction alone answers neither. The
+value of the causal framework is that it forces you to be explicit
+about the structural assumptions that make your answer correct — and
+therefore about the assumptions you'd need to challenge to change it.

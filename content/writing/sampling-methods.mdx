@@ -1,0 +1,109 @@
+---
+slug: sampling-methods
+title: Sampling methods — when exact inference is out of reach
+date: 2019-06-05
+summary: MCMC, Metropolis–Hastings, Gibbs, Hamiltonian Monte Carlo. What each is doing, and how to pick between them.
+meta: Machine learning · notes
+---
+
+Bayesian posterior inference and any expectation over an intractable
+distribution have the same shape: you can't compute the target
+distribution's normalising constant, but you can evaluate it up to
+that constant. **Markov chain Monte Carlo** methods generate samples
+from such distributions by constructing a Markov chain whose
+stationary distribution is the target.
+
+## The setup
+
+You have a distribution $\pi(x) \propto \tilde{\pi}(x)$ known only up
+to a normalising constant $Z = \int \tilde{\pi}(x)\, dx$ that you
+can't compute. You want either samples from $\pi$ or an expectation
+$\mathbb{E}_\pi[f(x)]$ for some function $f$.
+
+Every MCMC algorithm is a rule for stepping from $x_t$ to $x_{t+1}$
+such that, if you run it long enough, the marginal distribution of
+$x_t$ converges to $\pi$.
+
+## Metropolis–Hastings — the general workhorse
+
+The algorithm:
+
+1. Propose $x^{*} \sim q(x^{*} \mid x_t)$ from some proposal
+   distribution.
+2. Compute the acceptance ratio
+   $$
+   \alpha = \min\left(1, \; \frac{\tilde{\pi}(x^{*})\, q(x_t \mid x^{*})}{\tilde{\pi}(x_t)\, q(x^{*} \mid x_t)}\right).
+   $$
+3. With probability $\alpha$, set $x_{t+1} = x^{*}$; otherwise
+   $x_{t+1} = x_t$.
+
+That's it. Under mild conditions the chain converges to $\pi$
+regardless of the proposal, as long as the proposal is
+"reachable" from any state.
+
+The catch is how fast it converges. A proposal that's too narrow
+means high acceptance but slow exploration. A proposal too wide
+means most proposals are rejected. Tuning the proposal is the
+practical difficulty.
+
+## Gibbs sampling — the special case that pays off
+
+When you can sample from the *full conditionals*
+$\pi(x_i \mid x_{-i})$ analytically, **Gibbs sampling** cycles through
+each dimension in turn, sampling one at a time. Every proposal is
+accepted (it's a special case of Metropolis–Hastings with
+probability 1). Widely used in models where conditional distributions
+are conjugate — mixture models, LDA, hierarchical Bayesian setups.
+
+Downside: correlated dimensions kill Gibbs. If $x_1$ and $x_2$ are
+highly correlated, sampling them one at a time takes forever to
+traverse the correlated ridge. Block Gibbs (sampling groups jointly)
+helps but requires being able to sample from the block conditional.
+
+## Hamiltonian Monte Carlo — using gradients
+
+The reason HMC dominates modern Bayesian statistics: it uses gradient
+information to make far-away proposals that get accepted with high
+probability. The physics analogy: interpret the negative log
+posterior as a potential energy, add a momentum variable, simulate
+Hamiltonian dynamics, and use the endpoint as the proposal.
+
+Because Hamiltonian dynamics conserves energy (approximately, given
+finite-step-size integrators), the proposal moves far in state space
+while approximately preserving the target density — giving high
+acceptance probability at long distances. The result: HMC scales to
+much higher dimensions than random-walk Metropolis before mixing time
+becomes prohibitive.
+
+**NUTS** (No-U-Turn Sampler) automatically tunes HMC's step count,
+which was the main practical barrier. It's what Stan and PyMC use by
+default, and it's the reason those probabilistic-programming systems
+work.
+
+## Where sampling loses
+
+Sampling is expensive per usable draw. Modern deep-learning models
+have millions of parameters; the correlated posterior over those
+parameters is generally too high-dimensional and multi-modal for MCMC
+to mix in useful wall-clock. Variational inference (approximating
+the posterior with a tractable family) trades exactness for speed and
+usually wins in these regimes.
+
+The rule of thumb:
+
+- **Bayesian model with a few dozen to a few hundred parameters** and
+  well-defined posterior: HMC via Stan / PyMC / TFP. Gold standard for
+  correctness.
+- **High-dimensional posterior over neural-network weights**: MCMC is
+  usually a dead end. Variational inference or stochastic-gradient MCMC
+  (SGLD, HMC variants with noisy gradients) are the practical
+  alternatives, both of which give you approximate answers.
+
+## The diagnostics matter
+
+Every MCMC user learns this the hard way: a chain that hasn't mixed
+looks the same as a converged chain if you don't check. Standard
+diagnostics — trace plots, $\hat{R}$ across multiple chains, effective
+sample size — are non-negotiable. A chain reporting a beautiful
+posterior mean while being stuck in one mode is worse than no answer,
+because the answer looks trustworthy.

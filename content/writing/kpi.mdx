@@ -1,0 +1,111 @@
+---
+slug: kpi
+title: KPIs — Goodhart's Law is the whole game
+date: 2019-06-03
+summary: How to design measurements that stay useful once people start optimising for them, and why most KPI dashboards drift into the failure mode Goodhart warned about.
+meta: Notes
+---
+
+Charles Goodhart's original 1975 formulation was about monetary
+policy but the general form has become a management platitude:
+
+> *When a measure becomes a target, it ceases to be a good measure.*
+
+Every KPI dashboard I've ever seen ran into this failure mode. The
+metric that was chosen because it correlated with what actually
+mattered gets optimised, the correlation weakens, and eventually the
+metric is up while the underlying reality is down. This is not a
+theoretical concern; it happens in every organisation that measures
+things.
+
+## The mechanism
+
+The failure has a specific structure:
+
+1. Something matters (customer satisfaction, quality of a trading
+   strategy, health of a codebase) but is hard to measure.
+2. A proxy is chosen — NPS score, Sharpe ratio, test coverage — because
+   it *correlates* with the true thing under normal conditions.
+3. The proxy becomes a target: performance reviews, bonuses,
+   dashboards all track it.
+4. People optimise the proxy. The proxy responds — it goes up. The
+   underlying thing does not, because the correlation between proxy
+   and reality was *conditional* on people not gaming the proxy.
+
+The mistake is subtle. The proxy was a good measure *of a passive
+observation* of the system. It was never guaranteed to be a good
+target for an actively optimising agent.
+
+## Three signatures of a KPI going bad
+
+**Correlation breakdown.** The KPI diverges from any independent
+measure of the underlying reality. NPS is up, but retention is
+flat. Test coverage is 90%, but production bugs are unchanged.
+Sharpe ratio looks better, but max drawdown is worse.
+
+**Growing effort per unit of KPI improvement.** The organisation
+spends more and more resources chasing smaller improvements. This is
+the signal that people are exhausting the *gameable* part of the
+metric and now have to bend the underlying reality.
+
+**Suspicious composition changes.** Investigate any large improvement
+that came from a mix shift — losing "unhealthy" customers, changing
+what counts as a "test", classifying certain trades differently. A
+KPI improvement should be dominated by the KPI actually changing
+for a stable definition, not the definition changing.
+
+## Design principles that help
+
+None of these are silver bullets. All of them buy time.
+
+**Track a suite, not a single KPI.** Any one metric is gameable in
+isolation. A pair of counterbalancing metrics (throughput +
+quality; revenue + customer complaints; strategy PnL + max drawdown)
+is harder to game because improving one degrades the other. This is
+why financial trading uses risk-adjusted return rather than raw
+return — the second is trivially gamed by adding leverage.
+
+**Rotate what you look at.** People will optimise whatever's on the
+dashboard. If the dashboard has too many things or changes them
+periodically, it's harder to build a persistent optimisation strategy
+around any single one.
+
+**Prefer leading indicators only for diagnosis, not for compensation.**
+Leading indicators (a proxy for a lagging outcome) are unusually
+gameable because the lag hides the disconnect. Compensating people on
+a leading indicator is the fastest way to turn it into pure noise.
+
+**Directly measure the thing you actually care about, even when it's
+expensive.** If customer satisfaction is what matters, do the survey.
+If code quality matters, review the code. Proxies are for when you
+truly cannot measure the real thing — not for when measuring it is
+merely inconvenient.
+
+## In trading specifically
+
+The archetypal KPI-goes-wrong story in systematic trading is Sharpe
+ratio worship. A strategy with a headline Sharpe of 2.0 sounds
+strictly better than one at 1.5. But:
+
+- Sharpe ratios of 2.0+ on strategies with capacity constraints often
+  reflect *sample-size winner's curse* — the top of the ranked list
+  of backtested strategies. Overfit strategies live at the top.
+- Sharpe punishes upside volatility as much as downside — the
+  Sortino ratio is closer to what most people mean when they say
+  "risk-adjusted return".
+- A strategy that gambles for consistency (adds hidden tail risk) can
+  raise Sharpe by lowering realised volatility, at the cost of an
+  eventual blow-up that Sharpe by definition can't warn about.
+
+Every institutional trading desk knows this. Most retail-facing
+brokerages still lead with Sharpe. Draw your own conclusion about
+which population is doing the optimising.
+
+## The honest take
+
+The right answer isn't "abandon KPIs" — measurement is essential and
+you can't scale an organisation without shared metrics. The right
+answer is: **respect that any KPI you deploy will be optimised, and
+budget for either replacing it or auditing it before that optimisation
+has time to hollow it out**. This is what changes when you take
+Goodhart seriously.

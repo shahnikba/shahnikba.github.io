@@ -1,0 +1,136 @@
+---
+slug: normalizing-flows
+title: Normalizing flow models — tractable likelihood via invertible maps
+date: 2019-06-04
+summary: Chain together invertible transformations, apply the change-of-variables formula, and you have a generative model with exact likelihood computation.
+meta: Machine learning · notes
+---
+
+Generative models come in a few families with different trade-offs.
+GANs generate samples fast but have no tractable likelihood.
+Variational autoencoders have a lower-bound on likelihood but
+approximate posteriors. **Normalizing flows** give you both: exact
+likelihood and cheap sampling, from an invertible transformation of a
+simple base distribution.
+
+## The change-of-variables formula
+
+Start with a base distribution $p_Z(z)$ (usually a standard Gaussian)
+and an invertible, differentiable transformation $x = f_\theta(z)$.
+The induced distribution on $x$ has density
+
+$$
+p_X(x) \;=\; p_Z(f^{-1}(x)) \, \left|\det \frac{\partial f^{-1}}{\partial x}\right|.
+$$
+
+Equivalently, if $z = f^{-1}(x)$:
+
+$$
+\log p_X(x) \;=\; \log p_Z(z) + \log \left|\det \frac{\partial f^{-1}(x)}{\partial x}\right|.
+$$
+
+You can evaluate the likelihood of any $x$ exactly, and you can
+generate samples by drawing $z \sim p_Z$ and applying $f_\theta$.
+
+## The problem to solve
+
+For a single transformation, the Jacobian determinant might be
+tractable but the family is limited. To get expressive distributions
+you compose many transformations: $x = f_L \circ f_{L-1} \circ \cdots
+\circ f_1(z)$. The log-Jacobian sums cleanly across the composition,
+but each layer's Jacobian determinant has to be cheap to compute —
+otherwise the whole thing costs $O(d^3)$ per layer.
+
+The engineering challenge of normalizing flows is designing invertible
+layers with cheap Jacobian determinants.
+
+## Coupling layers — RealNVP
+
+**Coupling layers** (Dinh et al., RealNVP) split the input into two
+halves $x = (x_a, x_b)$ and transform:
+
+$$
+y_a = x_a, \qquad y_b = x_b \odot \exp(s(x_a)) + t(x_a)
+$$
+
+where $s$ and $t$ are arbitrary neural networks. The Jacobian is
+triangular — half identity, half element-wise scale — so its
+determinant is just $\prod \exp(s_i(x_a)) = \exp(\sum s_i(x_a))$.
+Cheap.
+
+Alternating which half is transformed layer-to-layer gives you a
+composition that can express arbitrarily complex distributions.
+RealNVP was the first practical demonstration on high-dimensional
+images.
+
+## Autoregressive flows — MAF, IAF
+
+**Autoregressive flows** transform one dimension at a time,
+conditioned on previous dimensions:
+
+$$
+y_i = \mu_i(x_{<i}) + \sigma_i(x_{<i}) \cdot x_i.
+$$
+
+The Jacobian is triangular, determinant is $\prod \sigma_i$. Two
+directions:
+
+- **MAF** (Masked Autoregressive Flow): fast density evaluation
+  (parallel over dimensions), slow sampling (sequential).
+- **IAF** (Inverse Autoregressive Flow): fast sampling, slow density
+  evaluation.
+
+Which one you want depends on your use case. For likelihood-based
+training on lots of data, MAF wins (evaluation is parallel). For
+generation, IAF wins (sampling is parallel).
+
+Both are more expressive per parameter than coupling layers, at the
+cost of a more complex implementation.
+
+## Continuous flows — Neural ODE flows
+
+**Continuous normalizing flows** replace the discrete composition of
+layers with a continuous transformation governed by an ODE:
+
+$$
+\frac{dx(t)}{dt} = g_\theta(x(t), t), \qquad x(0) \sim p_Z, \qquad x(1) = \text{sample}.
+$$
+
+The change-of-log-density along the trajectory is given by
+
+$$
+\frac{d \log p(x(t))}{dt} = -\operatorname{tr}\left(\frac{\partial g}{\partial x}\right)
+$$
+
+which is much cheaper than a determinant. In principle this gives
+enormous expressivity — you're picking an entire flow field. In
+practice the ODE solver at training time is the bottleneck; FFJORD
+and successors made this competitive on real problems.
+
+## When normalizing flows are the right tool
+
+- **Density estimation.** You want an actual likelihood, not a bound.
+  Flows give it to you exactly. Best-in-class on tabular and image
+  density estimation among tractable models.
+- **Sampling from a hard target with a known density (up to constant).**
+  Reverse the perspective: fit a flow to match a target you can
+  evaluate, then sample from the flow. Used in physics, Bayesian
+  posterior sampling, and variational inference (see: normalizing-flow
+  VI, IAF-VAEs).
+- **Simulating from a learnt model in latent spaces.** Flows compose
+  naturally with other generative models — VAEs with flow-based
+  priors, for instance.
+
+## The trade-off with GANs
+
+For pure image generation, GANs and their descendants (StyleGAN,
+diffusion models) generally beat flows on perceptual quality per
+parameter. Flows pay for tractable likelihood by using invertible
+architectures, which are less expressive per parameter than
+unrestricted neural networks. If you don't need the likelihood, you
+don't need to pay that cost.
+
+Where flows win is where the likelihood matters — model selection,
+outlier detection, variational inference, physics-informed generative
+modelling. That's a real and growing set of applications, even if
+image generation gets more attention.

@@ -1,0 +1,128 @@
+---
+slug: rl-as-probabilistic-modelling
+title: Reinforcement learning as probabilistic modelling
+date: 2019-06-01
+summary: Recasting the RL problem as inference over trajectories — the "control as inference" perspective — clarifies where entropy regularisation, soft Q-learning, and maximum-entropy methods all come from.
+meta: Reinforcement learning · notes
+---
+
+The classical framing of reinforcement learning is control: an agent
+picks actions to maximise expected discounted reward in an MDP.
+There's a second framing that keeps growing in influence — recasting
+the same problem as **probabilistic inference over trajectories**.
+
+The two framings are equivalent in a specific sense. But viewed
+through the probabilistic lens, several ideas that seem ad-hoc in the
+control framing turn out to be natural consequences of Bayesian
+reasoning.
+
+## The setup
+
+Fix a graphical model over trajectories with three kinds of variables:
+states $s_t$, actions $a_t$, and an "optimality" indicator $O_t \in
+\{0, 1\}$ at each timestep. Model the optimality likelihood as an
+exponential of the reward:
+
+$$
+p(O_t = 1 \mid s_t, a_t) \;=\; \exp(r(s_t, a_t)).
+$$
+
+(Reward is assumed non-positive so this is a valid probability; you
+can always shift.)
+
+Now ask the natural question: **conditional on all $O_t = 1$, what is
+the posterior distribution over trajectories?**
+
+## What falls out
+
+The posterior over actions has a clean form:
+
+$$
+p(a_t \mid s_t, O_{t:T} = 1) \;\propto\; \exp\big(Q_{\text{soft}}(s_t, a_t)\big)
+$$
+
+where $Q_{\text{soft}}$ is the **soft Q-function** satisfying a
+Bellman-like recursion:
+
+$$
+Q_{\text{soft}}(s_t, a_t) \;=\; r(s_t, a_t) + \gamma \, \mathbb{E}_{s_{t+1}}\!\left[V_{\text{soft}}(s_{t+1})\right],
+$$
+
+$$
+V_{\text{soft}}(s) \;=\; \log \sum_a \exp\big(Q_{\text{soft}}(s, a)\big).
+$$
+
+The `log-sum-exp` is a "soft max" — literally the smooth analogue of
+the hard $\max$ in standard Q-learning. It arises here **not as an
+engineering choice but as the marginal likelihood of the graphical
+model**.
+
+## What this reframing gives you
+
+Three practical consequences.
+
+**Maximum-entropy RL comes for free.** The optimal posterior policy
+maximises expected reward *plus* an entropy bonus $-\log \pi(a
+\mid s)$. In the control framing, entropy regularisation is a
+heuristic often added for exploration; in the inference framing, it
+is *the* correct objective for computing the posterior over actions.
+Soft Actor-Critic and related methods aren't ad-hoc — they're the
+principled approximation.
+
+**Boltzmann exploration is the right policy, not just a heuristic.**
+Softmax-over-Q with temperature 1 is the exact posterior policy in
+this graphical model. Temperature scaling corresponds to raising or
+lowering the reward magnitude. This gives a principled temperature
+schedule: anneal by scaling reward.
+
+**Off-policy evaluation gets a clean Bayesian formulation.** The
+whole apparatus of importance-weighted inference — SMC, particle
+filters, variational bounds — carries over to policy evaluation. This
+is where the framing pays real dividends for high-variance long-
+horizon estimators.
+
+## Where the framings differ
+
+They're equivalent in the limit but they differ in what they make
+easy to reason about.
+
+**Control framing is natural when:**
+- You care about a hard-optimal deterministic policy.
+- The reward structure is well-defined and you want an
+  interpretable value function.
+- You need standard convergence guarantees (Q-learning, policy
+  gradient theorems).
+
+**Inference framing is natural when:**
+- You want stochastic policies as a first-class object (for
+  exploration, for robustness, for imitation learning where the demo
+  policy is stochastic).
+- You want to combine reward-optimising and imitation objectives
+  cleanly — as in inverse RL, where the reward function itself is
+  a hidden variable to infer.
+- You want the entropy-regularised objective without justifying it as
+  a hack.
+
+## The relationship to imitation learning
+
+The inference framing makes imitation learning fit alongside RL
+cleanly. Instead of optimality $O_t = 1$, condition on observed
+expert actions $a_t = a_t^{\text{expert}}$. The posterior over the
+agent's policy given the expert trajectory is a well-posed inference
+problem, and gradient descent on the log-posterior recovers standard
+behavioural cloning as a special case, with principled
+uncertainty-quantification and regularisation coming for free.
+
+Inverse reinforcement learning — inferring the reward from expert
+trajectories — is the same graphical model with the reward function
+itself as the latent variable. What was two separate research
+communities in the 2010s became one under the probabilistic-inference
+banner.
+
+## The broader lesson
+
+Recasting a familiar problem as inference under a different
+generative model often reveals that ad-hoc engineering choices are
+consequences of the reformulation — and suggests new choices you
+hadn't seen before. The RL-as-inference story is one of the cleaner
+examples in modern machine learning of that pattern.

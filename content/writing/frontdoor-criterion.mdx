@@ -1,0 +1,104 @@
+---
+slug: frontdoor-criterion
+title: The frontdoor criterion
+date: 2019-06-17
+summary: When you cannot block the backdoor paths, the frontdoor criterion can still identify a causal effect — through the front door of a fully mediating variable.
+meta: Causality · notes
+---
+
+The backdoor criterion is the easy case: block all the spurious
+paths from $X$ to $Y$ by conditioning on observed confounders.
+Sometimes you cannot — the confounder is unmeasured. The **frontdoor
+criterion** is a subtler tool that identifies the causal effect
+anyway, using an intermediate variable that lies on the causal path.
+
+## The setup
+
+Consider the following DAG. $X$ affects $Y$, but there's an
+unobserved confounder $U$ that also causes both:
+
+$$
+X \rightarrow M \rightarrow Y, \qquad U \rightarrow X, \qquad U \rightarrow Y.
+$$
+
+The backdoor path $X \leftarrow U \rightarrow Y$ is unblockable — $U$
+is not observed. But if there's an observed **mediator** $M$ that
+fully mediates the effect of $X$ on $Y$, we can still identify the
+causal effect.
+
+## The three conditions
+
+$M$ satisfies the frontdoor criterion relative to $(X, Y)$ if:
+
+1. **$M$ intercepts every directed path from $X$ to $Y$** — i.e., $M$
+   is a full mediator; there's no direct arrow from $X$ to $Y$ that
+   bypasses $M$.
+2. **No unblocked backdoor path from $X$ to $M$** — usually
+   because $M$ has no confounding with $X$ (nothing else causes $M$
+   from the same source as $X$).
+3. **All backdoor paths from $M$ to $Y$ are blocked by $X$** — $X$
+   is a sufficient adjustment set for the $M$-to-$Y$ leg.
+
+## The frontdoor formula
+
+If those hold, the causal effect is identified by a two-step formula:
+
+$$
+P(y \mid do(x)) \;=\; \sum_{m} P(m \mid x) \sum_{x'} P(y \mid m, x')\, P(x').
+$$
+
+The intuition: compute the effect of $X$ on $M$ (the first sum),
+then the effect of $M$ on $Y$ adjusted for $X$ (the inner sum), then
+compose them.
+
+The remarkable part: we never needed to observe or condition on $U$.
+The mediator does the work.
+
+## The canonical example — smoking, tar, cancer
+
+Pearl's original example, though tobacco companies would dispute it.
+Suppose:
+
+- $X$ = smoking
+- $M$ = tar deposits in lungs
+- $Y$ = lung cancer
+- $U$ = an unobserved "genetic disposition" that causes both smoking
+  behaviour and cancer independently of tar
+
+If tar fully mediates the effect of smoking on cancer, and if the
+genetic disposition doesn't independently affect tar deposits, and
+if smoking blocks the backdoor from tar to cancer, then we can
+identify the causal effect of smoking on cancer from observational
+data — even without observing genetics — using the frontdoor formula.
+
+Whether these assumptions actually hold is a scientific question, not
+a statistical one. That's the whole game.
+
+## Why it feels magical (and why it isn't)
+
+The frontdoor criterion identifies a causal effect without observing
+or adjusting for the confounder. Read hastily, that sounds impossible
+— surely you need to account for the confounder somehow?
+
+The trick is that the mediator gives you two clean sub-problems: $X$
+affects $M$ with no confounding, and $M$ affects $Y$ with only $X$ as
+the confounder. Composing them isolates the causal path and cancels
+the confounding. The unobserved $U$ never enters because its influence
+on $Y$ is captured by conditioning on the observed $X$ in the second
+step.
+
+## Where it matters in practice
+
+Frontdoor applications are rarer than backdoor applications in the
+wild because the mediator conditions are strict — you need to
+plausibly claim that the observed $M$ captures the *entire* effect of
+$X$ on $Y$. In experimental sciences (mediation analysis in
+biology, mechanistic pharmacology) this can hold. In social science
+and financial applications it usually doesn't; treatment effects
+almost always have direct as well as mediated components.
+
+The frontdoor criterion is worth knowing anyway. Even when it doesn't
+apply, thinking about *what would be enough* often turns up nearby
+strategies — sensitivity analysis for the direct-effect assumption,
+partial identification bounds, or an instrumental-variable design
+built around the same mediator.

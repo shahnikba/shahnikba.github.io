@@ -1,0 +1,108 @@
+---
+slug: gans
+title: Generative adversarial networks
+date: 2019-06-03
+summary: A generator and a discriminator playing a minimax game. Enormously influential, notoriously fragile, and now largely superseded by diffusion models — for reasons worth understanding.
+meta: Machine learning · notes
+---
+
+The **generative adversarial network** — two neural networks locked in
+an adversarial game — was one of the most consequential ideas in
+machine learning of the last decade. It also turned out to be one of
+the hardest to train reliably. Both parts of that story are worth
+understanding, especially now that diffusion models have largely taken
+its place at the frontier of image generation.
+
+## The minimax formulation
+
+A GAN has two players. A **generator** $G_\theta$ maps a noise vector
+$z \sim p_Z$ to a sample in data space. A **discriminator** $D_\phi$
+outputs the probability that its input is a real training example
+rather than a $G$-generated fake. The players minimise / maximise
+opposite sides of a common objective:
+
+$$
+\min_{\theta} \max_{\phi} \; \mathbb{E}_{x \sim p_{\text{data}}}[\log D_\phi(x)] + \mathbb{E}_{z \sim p_Z}[\log(1 - D_\phi(G_\theta(z)))].
+$$
+
+At the theoretical equilibrium, $G$ generates samples indistinguishable
+from real data and $D$ can only guess. In practice you never reach
+equilibrium — you approach it via alternating gradient updates.
+
+## Why they're hard to train
+
+Three failure modes surface constantly:
+
+**Mode collapse.** The generator finds one plausible output that
+fools the discriminator and produces it (or slight variations)
+regardless of the input noise. The samples look real but the
+diversity of the true data is lost. This is the classic GAN
+frustration: a beautiful cat that's always the same cat.
+
+**Discriminator saturation.** If $D$ becomes too good too fast, its
+gradient with respect to $G$-outputs shrinks toward zero — the log-
+sigmoid saturates when the fake is confidently rejected. $G$
+then has no useful signal to learn from. The community's response
+was to keep $D$ deliberately weak — carefully limiting its capacity
+or training rate.
+
+**Non-stationary target.** Both $G$ and $D$ are moving. Standard
+optimisation theory doesn't apply cleanly when the objective is
+adversarial. Two-player games generically don't have simple
+convergence guarantees; equilibria may not exist, may not be unique,
+may not be reachable via gradient descent.
+
+## The workarounds
+
+An enormous body of research produced fixes and variants. A few of
+the most useful:
+
+- **Wasserstein GAN** (WGAN) replaced the log-loss with the
+  Earth-Mover distance, whose gradient doesn't vanish even when $D$
+  perfectly distinguishes the two distributions. This alone made
+  training substantially more stable. WGAN-GP adds a gradient penalty
+  to enforce the Lipschitz condition, giving the still-most-widely-
+  used formulation.
+- **Spectral normalization** on discriminator weights bounds the
+  Lipschitz constant differently; sometimes complementary to WGAN-GP.
+- **Progressive growing** (Karras et al., ProGAN, then StyleGAN)
+  starts training on low-resolution images and progressively adds
+  detail. Produced the first genuinely photorealistic face generators.
+- **Careful architectural choices** — no batch norm in $D$, spectral
+  normalization, TTUR (two-time-scale updates giving $D$ and $G$
+  different learning rates).
+
+## Why diffusion models took over
+
+Around 2020–2022, denoising diffusion models overtook GANs on almost
+every benchmark. Three reasons:
+
+- **Stable training.** Diffusion models are trained with a simple
+  regression objective (predict the noise added to a corrupted
+  sample). No minimax, no adversarial dynamics. You get sensible
+  results with default hyperparameters — a bar GANs almost never met.
+- **Mode coverage.** Diffusion training is likelihood-adjacent, which
+  strongly discourages the mode-collapse failure mode.
+- **Scale.** Diffusion models scale up cleanly with more parameters
+  and more compute; GAN scaling was always more delicate.
+
+At the time of writing, essentially all frontier image-generation
+work uses diffusion (Stable Diffusion, DALL·E, Midjourney) or
+diffusion-adjacent methods. GANs still have niches — real-time
+generation (they're fast at inference), image-to-image translation
+(pix2pix, CycleGAN) — but the frontier has moved on.
+
+## What GANs got right
+
+Even in retirement, GANs left a durable contribution. The adversarial
+training idea shows up in domain adaptation, robust training, and
+some diffusion refinements. The lesson that a network can learn a
+distribution *implicitly* — via samples without a tractable density
+— shaped how everyone thinks about generative models. And StyleGAN's
+disentangled latent spaces remain the reference for controllable
+image synthesis.
+
+The broader lesson from watching GANs rise and fall: **training
+stability compounds**. A method that works reliably out of the box
+gets iterated on faster; a fragile method gets abandoned even if its
+best cases are impressive.
