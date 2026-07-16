@@ -1,0 +1,119 @@
+---
+slug: johansen-cointegration
+title: Cointegration for CDS baskets — the Johansen workhorse
+date: 2011-03-15
+summary: Notes on Johansen's multivariate cointegration test as it was actually used on credit prop desks — building mean-reverting CDS baskets from co-integrated names, and knowing when to unwind them.
+meta: Credit · notes
+---
+
+For much of the late 2000s and early 2010s, one of the workhorse
+relative-value strategies on credit prop desks was to build
+portfolios of CDS names whose relative values kept coming back to a
+stable equilibrium — even when the individual spreads were free to
+wander. The technical machinery behind those baskets was almost
+always Johansen's multivariate cointegration test.
+
+The setup is direct. Take a set of similar issuers — European
+banks, US investment-grade industrials, European autos, a sovereign
+cluster. Each individual CDS spread is well-approximated as an
+integrated process: it drifts with the credit cycle, with funding
+conditions, with sector-wide news. But because these issuers share
+those common drivers, certain weighted combinations of their
+spreads turn out to be remarkably stable. The whole game is finding
+the weights.
+
+## Why cointegration, not correlation
+
+The obvious tempting shortcut is to use correlation. Two CDS
+spreads with a 95% correlation must be substitutes for each other,
+right? Not quite. Correlation is a statement about short-term
+co-movement in changes; it tells you nothing about whether the
+levels drift apart over time.
+
+Cointegration is a statement about the long-run equilibrium. Two
+spreads can move together day-to-day and yet slowly separate over
+months. Only a cointegrated linear combination is guaranteed to be
+stationary — and only a stationary spread is a legitimate
+mean-reversion target.
+
+## The Johansen framework in one page
+
+Start with the observed vector
+$X_t = (CDS_1, CDS_2, \ldots, CDS_n)^{\top}$, each component
+approximately $I(1)$. Model it as a vector autoregression and
+rewrite in Vector Error Correction form:
+
+$$
+\Delta X_t = \Pi X_{t-1} + \sum_{i=1}^{p-1} \Gamma_i \Delta X_{t-i} + \epsilon_t.
+$$
+
+Everything interesting is inside $\Pi$. Johansen's decomposition
+splits it as $\Pi = \alpha \beta^{\top}$, where the columns of
+$\beta$ are the *cointegration vectors* — the basket weights that
+make the combination stationary — and $\alpha$ contains the
+*adjustment speeds*: which of the underlying names does the
+pulling back when the spread deviates.
+
+The number of independent stationary combinations — the rank of
+$\Pi$ — is estimated with a trace test or a maximum-eigenvalue
+test. Most desks trade the single dominant relationship even when
+more exist, because interpretability matters as much as
+statistical power.
+
+## Reading β and α practically
+
+A fitted $\beta$ for, say, five European banks might look like
+
+$$
+\beta = (1,\ -0.72,\ -0.54,\ 0.18,\ 0.08)^{\top}.
+$$
+
+That defines the basket: long one unit of CDS A, short 0.72 of
+CDS B, short 0.54 of CDS C, long a small amount of D and E. These
+are the hedge ratios — the trade you actually put on.
+
+$\alpha$ is a diagnostic. A large adjustment coefficient for name B
+tells you that when the basket dislocates, it's usually B that
+snaps back into line. Useful for sizing, for choosing which leg to
+hedge more aggressively, and — most importantly — for spotting when
+the adjustment mechanism itself is degrading.
+
+## The trading loop
+
+The rest is discipline. Once you have $\beta$ and have confirmed
+the constructed spread $S_t = \beta^{\top} X_t$ is stationary
+(ADF or KPSS on the fitted series), estimate its mean, standard
+deviation and half-life. Standardise the current level as a
+z-score,
+
+$$
+z_t = \frac{S_t - \mu}{\sigma},
+$$
+
+enter when $|z_t|$ crosses a threshold — two standard deviations
+is the classical starting point, adapted to the half-life and the
+transaction costs — and exit as the z-score reverts towards zero.
+No directional view on credit is taken; the trade depends only on
+the relationship reasserting itself.
+
+## Where it breaks
+
+The reason this strategy needs constant re-estimation is that the
+equilibrium itself changes. Mergers, downgrades, spinoffs,
+restructurings all break the industrial logic that made a basket
+cohere in the first place. Regime shifts — the 2008 crisis and the
+2010–12 European sovereign debt crisis both did this — re-price
+credit correlations wholesale and turn a stable cointegration
+vector into a slowly-drifting one that hasn't quite blown up yet
+but has stopped meaning what it used to. And when one leg's
+liquidity deteriorates, execution slippage quietly overwhelms the
+small z-score reversion gains that make the whole thing profitable.
+
+The cointegration relationship is a living thing. Baskets get
+re-fitted regularly, tested rigorously out of sample, and pulled
+the moment the underlying economic story stops holding up. It's
+simple statistical machinery, hard market realities, and the
+reason cointegration-based baskets stayed a staple of credit
+relative-value trading for the better part of two decades — until
+Volcker and post-crisis regulation squeezed the space they lived
+in.
