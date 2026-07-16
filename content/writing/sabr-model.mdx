@@ -1,0 +1,252 @@
+---
+slug: sabr-model
+title: The SABR model — parameter intuition and calibration
+date: 2006-01-15
+summary: Working notes on Stochastic Alpha Beta Rho — how each of the four parameters shapes the implied-volatility surface, and how experienced traders reason about calibration on interest-rate, FX, and commodity option desks.
+meta: Derivatives · notes
+---
+
+## 1. Model dynamics
+
+The SABR (Stochastic Alpha Beta Rho) model assumes that the forward
+price $F_t$ and its instantaneous volatility $\alpha_t$ evolve
+according to
+
+$$
+dF_t = \alpha_t F_t^{\beta} \, dW_1,
+$$
+
+$$
+d\alpha_t = \nu \alpha_t \, dW_2,
+$$
+
+with
+
+$$
+dW_1 \, dW_2 = \rho \, dt,
+$$
+
+where:
+
+- $F_t$: forward price
+- $\alpha_t$: instantaneous volatility
+- $\beta$: elasticity parameter
+- $\nu$: volatility of volatility (vol-of-vol)
+- $\rho$: correlation between the forward and volatility
+
+---
+
+## 2. Intuition behind the parameters
+
+The SABR parameters can be viewed as controlling four independent
+characteristics of the implied-volatility surface:
+
+| Parameter | Primary effect |
+| --- | --- |
+| **α (Alpha)** | Volatility level |
+| **β (Beta)** | Backbone / elasticity |
+| **ρ (Rho)** | Skew |
+| **ν (Nu)** | Smile curvature (convexity) |
+
+---
+
+## 3. α (Alpha) — overall volatility level
+
+Alpha determines the overall height of the volatility surface. A
+larger $\alpha$ raises implied volatility almost uniformly across
+strikes.
+
+Near the money,
+
+$$
+\sigma_{\text{ATM}} \approx \frac{\alpha}{F^{1-\beta}}.
+$$
+
+Therefore $\alpha$ primarily controls:
+
+- ATM volatility
+- Overall volatility level
+- Vertical shift of the smile
+
+**Trader intuition:**
+
+> *"The whole surface is too low (or too high)."* Adjust **α**.
+
+---
+
+## 4. β (Beta) — backbone
+
+Beta controls how volatility changes as the forward price moves.
+The instantaneous volatility is
+
+$$
+\alpha F^{\beta}.
+$$
+
+Different values correspond to different assumptions.
+
+### β = 1
+
+Lognormal dynamics (Black model):
+
+- Percentage moves are constant.
+- Standard Black-76 assumption.
+- Common in FX.
+
+### β = 0
+
+Normal dynamics (Bachelier model):
+
+- Absolute moves are constant.
+- Frequently used when rates are low or may become negative.
+
+### 0 < β < 1
+
+Intermediate behaviour. This determines the **backbone** — how the
+ATM volatility changes when the forward level changes.
+
+**Trader intuition:**
+
+$\beta$ does **not** mainly change the smile shape. Instead, it
+determines how the entire smile moves as the underlying forward
+changes.
+
+Typical values:
+
+- Swaptions: 0 or 0.5
+- Caps / Floors: 0.5
+- FX: 1
+- Commodities: 0.5 – 1
+
+---
+
+## 5. ρ (Rho) — skew
+
+$\rho$ is the correlation between forward moves and volatility moves.
+It controls the asymmetry of the implied-volatility smile.
+
+**Negative $\rho$:**
+
+- Forward decreases
+- Volatility increases
+- Left wing becomes higher
+
+**Positive $\rho$:**
+
+- Forward increases
+- Volatility increases
+- Right wing becomes higher
+
+Thus $\rho$ mainly controls:
+
+- Direction of the skew
+- Magnitude of the skew
+
+**Trader intuition:**
+
+> *"The left wing is too high."* Decrease $\rho$ (make it more
+> negative).
+
+---
+
+## 6. ν (Nu) — volatility of volatility
+
+Nu governs the stochasticity of $\alpha$:
+
+$$
+d\alpha = \nu \alpha \, dW.
+$$
+
+If $\nu = 0$, volatility becomes deterministic and the smile almost
+disappears. Larger $\nu$ produces:
+
+- stronger smile
+- more curvature
+- fatter wings
+
+It mainly controls smile convexity and smile intensity.
+
+**Trader intuition:**
+
+> *"The smile is too flat."* Increase $\nu$.
+
+---
+
+## 7. Interaction between parameters
+
+Although traders often summarise the parameters as *"ρ controls the
+skew, ν controls the smile"*, they are not completely independent.
+
+In Hagan's implied-volatility approximation, one correction term is
+
+$$
+\frac{\rho \beta \nu \alpha}{4 (FK)^{(1-\beta)/2}}.
+$$
+
+Consequently:
+
+- Increasing $\nu$ also amplifies the skew.
+- $\rho$ determines the **direction** of the skew.
+- $\nu$ determines the **strength** (curvature) of the smile and
+  also reinforces the skew.
+- $\beta$ determines how the smile evolves as the forward moves.
+- $\alpha$ anchors the overall volatility level.
+
+Experienced traders frequently adjust **ρ and ν together** during
+calibration.
+
+---
+
+## 8. Why β is usually fixed
+
+In practice, most trading desks do **not** calibrate $\beta$.
+Instead, $\beta$ is chosen in advance (for example 0, 0.5, or 1).
+
+The reason: $\alpha$ and $\beta$ are highly correlated. Changing
+$\beta$ can often be compensated by changing $\alpha$, making
+calibration unstable and producing non-unique solutions.
+
+Typical calibration therefore estimates only $\alpha$, $\rho$, and
+$\nu$ while $\beta$ remains fixed.
+
+---
+
+## 9. Practical calibration workflow
+
+A trader looking at a market volatility smile typically thinks as
+follows:
+
+| Market observation | Parameter to adjust |
+| --- | --- |
+| Entire surface too low / high | Increase / decrease $\alpha$ |
+| Smile too flat | Increase $\nu$ |
+| Smile too curved | Decrease $\nu$ |
+| Left wing too high | Make $\rho$ more negative |
+| Right wing too high | Make $\rho$ more positive |
+| ATM volatility changes incorrectly as forwards move | Adjust $\beta$ |
+
+---
+
+## 10. Trader's cheat sheet
+
+| Parameter | Intuition | Main effect |
+| --- | --- | --- |
+| **α (Alpha)** | Overall volatility level | Vertical shift of the smile |
+| **β (Beta)** | Elasticity / backbone | How ATM volatility evolves as the forward moves |
+| **ρ (Rho)** | Spot–volatility correlation | Skew (left vs. right wing) |
+| **ν (Nu)** | Volatility of volatility | Smile curvature (convexity) |
+
+---
+
+## 11. Key takeaways
+
+- $\alpha$ sets the overall level of implied volatility.
+- $\beta$ controls the backbone of the volatility surface and is
+  usually fixed.
+- $\rho$ determines the sign and magnitude of the skew.
+- $\nu$ controls the curvature (convexity) of the smile and also
+  amplifies skew.
+- The combination of these four parameters allows SABR to fit market
+  volatility smiles while remaining computationally efficient, which
+  explains its widespread use on interest-rate, FX, and commodity
+  option desks.
