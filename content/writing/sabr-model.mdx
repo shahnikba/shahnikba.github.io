@@ -78,20 +78,8 @@ FX, 0.5–1 for commodities) based on the desk's view of the
 underlying's dynamics, then calibrate only $\alpha$, $\rho$, $\nu$
 against the market.
 
-## The workflow on the desk
-
-At the market surface, most days there are only four moves worth
-knowing:
-
-- The whole surface is too low or too high → adjust $\alpha$.
-- The smile is too flat or too curved → adjust $\nu$.
-- One wing is systematically off → adjust $\rho$ in the wing's
-  direction.
-- The ATM vol drifts oddly as the forward moves — the backbone
-  isn't right → the assumed $\beta$ deserves a look.
-
-Four levers, four questions, one surface. That efficiency — plus
-Hagan's closed-form implied-volatility approximation — is why SABR
-is still the default on interest-rate, FX, and commodity option
-desks two decades after it appeared, despite being wrong about
-plenty of things.
+That efficiency — four parameters that map cleanly onto how a trader
+thinks about the surface, plus Hagan's closed-form
+implied-volatility approximation — is why SABR is still the default
+on interest-rate, FX, and commodity option desks two decades after
+it appeared, despite being wrong about plenty of things.
