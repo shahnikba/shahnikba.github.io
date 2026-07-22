@@ -1,0 +1,138 @@
+---
+slug: local-vol-callable-cms
+title: What local volatility forgets — a callable CMS in two models
+date: 2006-12-15
+summary: Calibrate a local-vol model to a stochastic-vol world so it reprices every European exactly, and it still misprices the embedded call in a callable CMS by ~5%. A small Monte Carlo puts a number on what the marginal cannot see.
+meta: Derivatives · notes
+---
+
+Local volatility has a seductive property: calibrated to the market,
+it reprices every European vanilla exactly. Given a full surface of
+option prices, Dupire hands you a diffusion
+
+$$
+dS_t = \sigma_{\text{loc}}(S_t, t)\, S_t \, dW_t
+$$
+
+whose terminal marginals match the observed smile at every strike and
+maturity. If the thing you are pricing is a function of $S_T$ alone,
+you are done — the marginal is all the payoff can see.
+
+Gatheral's criticism is that almost nothing interesting is a function
+of $S_T$ alone. The moment a payoff depends on the *path*, or on a
+decision taken at intermediate dates, matching the marginals stops
+being enough. Local vol fits $\mathbb{P}(S_T)$ at every date and still
+gets the *forward* dynamics — how volatility behaves conditional on
+where the rate has travelled — quantitatively wrong.
+
+A callable CMS is the cleanest example I know, and small enough to
+put a number on.
+
+## The experiment
+
+Take one stochastic-volatility model as the truth:
+
+$$
+dS_t = \sigma_t S_t\, dW_t, \qquad
+d\sigma_t = \kappa(\theta - \sigma_t)\,dt + \xi\, dZ_t, \qquad
+dW\,dZ = \rho\, dt.
+$$
+
+Now build a local-vol model that agrees with it on every European
+price, and ask what the two disagree about. The local variance that
+reproduces the marginals is the Dupire local volatility, and the
+cleanest way to write it is as the conditional expectation of
+instantaneous variance given the level,
+
+$$
+\sigma_{\text{loc}}^2(S,t) = \mathbb{E}\!\left[\sigma_t^2 \mid S_t = S\right].
+$$
+
+This is the same surface Dupire's price-differentiation formula
+targets; here we read it straight off the simulated paths by binning
+$\sigma^2$ against $S$ at each date. By construction it reproduces the
+terminal marginal at every date, so every European reprices.
+
+The [Monte Carlo](https://github.com/shahnikba/shahnikba.github.io/blob/main/code/local-vol-callable-cms/callable_cms.c)
+simulates the SV model, calibrates that surface, and reprices under
+it. The product: a note paying the CMS rate twice a year, which the
+issuer may redeem once the rate breaches a barrier just above the
+money — a payoff whose life is a stopping time, so its value depends on
+the joint law $\mathbb{P}(S_{T_1},S_{T_2},\dots)$, not on any single
+marginal.
+
+## What comes out
+
+Both models are drift-free by construction; the Monte Carlo confirms
+this at the end of the run — $\mathbb{E}[S_T] = 0.02998$ under SV and
+$0.03000$ under LV, against $S_0 = 3.00\%$ — so no simulation bias
+contaminates the comparisons that follow.
+
+The European smile is then reproduced to Monte-Carlo accuracy across
+the full strike range, which is the whole point of the calibration:
+
+```
+European call at T=5y      SV          LV        err
+   0.020               0.011487    0.011514   +0.2%
+   0.025               0.008438    0.008464   +0.3%
+   0.030               0.006269    0.006292   +0.4%
+   0.035               0.004771    0.004790   +0.4%
+   0.040               0.003729    0.003745   +0.4%
+```
+
+Now the callable. Split it into the coupon strip (never called) and
+the issuer's embedded call — the piece the client sells:
+
+```
+                        SV(truth)   LV
+Coupon strip (call off)  0.149938   0.150026
+Callable CMS note        0.082153   0.078880
+Embedded issuer call     0.067785   0.071146   +5.0%
+```
+
+The coupon strip is identical — it only ever sees the marginals, and
+is in fact worth $\sum_i \mathbb{E}[S_{T_i}]$ under either model. The
+embedded call is not. Priced under a local-vol model that agrees with
+the SV world on every vanilla, the issuer's option is worth about
+**5% more** than under the SV dynamics themselves. Same marginals,
+different call value — because the call decision at each date depends
+on the volatility state, and local vol has collapsed that state onto
+the level.
+
+## Why local vol can't see it
+
+Follow a path to some intermediate date and suppose the rate sits at
+3%. The local-vol model reads that number and knows everything it is
+allowed to know: the level is 3%, so the volatility from here is
+$\sigma_{\text{loc}}(3\%, t)$, full stop. The SV model looks at the
+same 3% and sees two worlds — a calm one where the barrier is far, and
+a stressed one where the same 3% is one move from being called. Both
+carry $S_t = 3\%$; they carry different
+
+$$
+\mathbb{P}\!\left(\text{called before }T \mid S_t = 3\%\right),
+$$
+
+and that is what sets the value of the call. The marginals cannot
+tell them apart.
+
+## What a desk actually does
+
+The toy keeps the two things local vol conflates — the level and the
+volatility state — separate only long enough to make the point. A
+production callable-CMS system keeps them separate throughout. Rate
+dynamics come from a term-structure model, Hull–White or an LMM/BGM
+forward-rate setup, so the curve evolves rather than a single rate.
+The volatility state gets its own dynamics, typically
+[SABR](/writing/sabr-model/). And the call is an optimal-stopping
+problem,
+
+$$
+V_t = \max\big(\text{continue},\ \text{exercise}\big),
+$$
+
+solved on a tree, a PDE, or by Longstaff–Schwartz regression. All of
+that exists because a callable CMS never asks $\mathbb{P}(S_T)$. It
+asks about the joint law of $(S_{T_1}, S_{T_2}, \dots, S_T)$ — and
+answering that honestly needs a model of how volatility behaves along
+the way, not just a surface that reprices today's vanillas.
