@@ -1,0 +1,249 @@
+---
+slug: exotic-rates-client-view
+title: Why would a client buy this? — a note on exotic rates products
+date: 2006-11-15
+summary: Eight classic exotic interest-rate structures read from the client's side of the trade rather than the model's. What view each one encodes, who bought it, and what they gave up in return.
+meta: Derivatives · notes
+---
+
+It is easy to spend a career inside the mathematics and forget the
+commercial reason a structure exists. Nobody woke up wanting a
+twenty-page term sheet. They wanted a position they could not build
+out of a bond and a vanilla swap.
+
+> Clients weren't buying complexity. They were buying a view they
+> couldn't otherwise express.
+
+Each note below follows the same shape: the market view, the coupon
+that encodes it, who bought it, and what the client handed over in
+exchange.
+
+## CMS — constant maturity swap
+
+*"Long-term rates will rise much more than short-term rates."*
+
+```
+Coupon = 10Y swap rate
+  instead of
+Coupon = 6M Euribor
+```
+
+A floater pays whatever the short end does. A CMS coupon re-fixes
+off the *long* end every period, so the buyer keeps earning the
+ten-year rate wherever it goes. Buying a ten-year bond locks in
+today's level; a CMS coupon is a position on tomorrow's.
+
+**Typical buyer** — insurers, pension funds, asset managers.
+**Client gives up** — yield if the long end stalls; the convexity
+adjustment is already paid for inside the coupon.
+**Quant's job** — replicate the CMS rate with a strip of swaptions;
+the smile does the work.
+
+## CMS spread — slope-linked coupon
+
+*"Inflation stays high, the curve steepens."*
+
+```
+Coupon = 10Y swap − 2Y swap
+
+today   10Y 4.00% − 2Y 3.00% = 1.00%
+view    10Y 6.00% − 2Y 4.00% = 2.00%   → coupon doubles
+```
+
+The level of rates drops out entirely. What survives is the shape.
+A parallel shift of 200 bp pays this note nothing; 100 bp of
+steepening pays it everything.
+
+**Typical buyer** — macro hedge funds, insurers, structured-note investors.
+**Client gives up** — the coupon can collapse to zero — or floor
+there — in a flattening.
+**Quant's job** — correlation between two swap rates, plus a spread
+smile nobody can quote.
+
+## Callable CMS — redeemable at the bank's choice
+
+*"Pay me more now; I'll accept that this may not last."*
+
+```
+Pay 10Y swap rate for 20Y
+Bank may redeem annually
+
+non-call coupon ≈ 3%   →   callable coupon ≈ 5%
+```
+
+The extra 200 bp is not generosity. The client has sold the bank a
+Bermudan option on the note's life, and the premium comes back as
+coupon. When the trade is working best for the client, that is
+precisely when it gets called away.
+
+**Typical buyer** — yield-hungry real money; still traded today in
+many wrappers.
+**Client gives up** — reinvestment certainty: called in low rates,
+left holding it in high rates.
+**Quant's job** — Bermudan callability on a CMS coupon; model
+choice moves the price more than the market does.
+
+## Range accrual — coupon paid by the day
+
+*"Rates aren't going anywhere."*
+
+```
+Pay 6% × (days 10Y swap stays in [2%, 5%] ÷ 365)
+
+300 days inside  →  6% × 300 / 365  ≈  4.9%
+```
+
+The client is paid for calm. Every day the reference rate sits
+inside the corridor, a slice of coupon accrues; every day outside,
+nothing. It is a bet against movement dressed up as an income
+product.
+
+**Typical buyer** — income-focused investors with a range-bound
+rates view.
+**Client gives up** — a regime change costs the whole coupon, not a
+slice of it.
+**Quant's job** — a daily strip of digitals, hundreds of them, all
+sensitive to the smile.
+
+## Bermudan swaption — enter the swap on your own schedule
+
+*"I know I'll need this hedge. I don't know when."*
+
+```
+Right to enter a payer swap at year 1, 2, 3, …
+Exercise once, whenever the level is attractive.
+```
+
+An insurer writing liabilities over several years cannot pick a
+hedging date today. Rather than guess, it buys the right to choose.
+The flexibility is not a nicety — it has a computable economic
+value, and it is usually cheaper than being wrong.
+
+**Typical buyer** — insurers, pension schemes, corporate treasuries.
+**Client gives up** — premium well above the equivalent European —
+paying for dates it may never use.
+**Quant's job** — the exercise boundary; mean reversion and
+calibration choice dominate.
+
+## Callable bond — the corporate side of the same option
+
+*"If funding gets cheaper, I want out."*
+
+```
+Issue at 6%
+Year 3: market rate falls to 3%
+→ call, refinance
+```
+
+Exactly a mortgage refinancing, in institutional size. The issuer
+pays a higher coupon at launch in return for the right to walk
+away — and the buyer of that bond is, whether they think of it that
+way or not, short a Bermudan.
+
+**Typical buyer** — issued by corporates; bought by yield-seeking
+credit investors.
+**Client gives up** — issuer: a wider spread up front. Investor:
+the upside, called away at the worst moment.
+**Quant's job** — same Bermudan machinery, now with credit spread
+and issuer behaviour on top.
+
+## PRDC — power reverse dual currency
+
+*"Domestic yields are zero. I need income, and the yen won't strengthen."*
+
+```
+Coupon ≈ foreign rate × (FX rate ÷ FX strike) − domestic rate
+floored at 0, callable
+
+headline coupon 8%   vs   domestic deposit 0.5%
+```
+
+The legend of the pre-2008 market, sold heavily to Japanese retail.
+The coupon looked like a yield. It was actually a leveraged short
+yen position with a call feature attached, and the risks stacked up
+quietly: FX, rates, correlation, volatility, and the issuer's right
+to redeem.
+
+**Typical buyer** — Japanese retail and regional institutions hunting
+for yield.
+**Client gives up** — coupon can drop to zero for the life of the
+note if the currency moves against them; many buyers never priced
+that branch.
+**Quant's job** — FX / IR hybrid model, quanto effects, long-dated
+FX smile, callability on top.
+
+## TARN — target redemption note
+
+*"Pay me well until I've earned enough, then give me my money back."*
+
+```
+Coupon 8% per year
+Redeem once cumulative coupons reach 40%
+
+8 + 8 + 8 + 8 + 8  →  target hit, note terminates
+```
+
+The appeal is a defined finish line: a known total return, reached
+quickly. The catch is that the finish line only arrives fast when
+the market cooperates. When it doesn't, the note stays alive,
+paying little, for as long as it takes.
+
+**Typical buyer** — investors wanting enhanced income with a capped,
+defined total return.
+**Client gives up** — the good scenario ends early; the bad
+scenario is the one they stay in.
+**Quant's job** — path-dependent redemption — Monte Carlo carrying
+a running coupon counter.
+
+## Why the banks liked them
+
+The commercial side that rarely reached the model library.
+
+**Margin.** A plain swap earns a few basis points of spread. A
+structured note earns a structuring fee on top of it.
+
+**Bid–offer.** Bespoke payoffs have no screen price, so the spread
+is set by the desk rather than the market.
+
+**Warehousing.** The trade leaves the desk holding vega,
+correlation and convexity it believes are cheap — a position it
+wanted anyway, now paid for by the client.
+
+**Hedging flow.** Dynamic hedging generates ongoing business in the
+vanillas the desk also makes markets in.
+
+All of which was highly profitable — provided the risk was
+genuinely understood and genuinely managed. 2008 was, in large
+part, the audit of that proviso.
+
+## View → instrument
+
+The whole note in one table. Read it right to left and every
+structure looks obvious.
+
+| View | Instrument |
+| --- | --- |
+| Long-term rates will rise | CMS |
+| The yield curve will steepen | CMS spread |
+| Rates will stay in a range | Range accrual |
+| I want a higher coupon and accept call risk | Callable CMS |
+| I need flexibility on when to enter a swap | Bermudan swaption |
+| I need cheap funding with a way out | Callable bond |
+| I want much higher yield and accept FX risk | PRDC |
+| I want enhanced income up to a target | TARN |
+
+## The quant's consolation
+
+Every structure above decomposes into the same short list of parts:
+vanilla swap, swaption strip, digital options, barrier features,
+Bermudan callability, and path-dependent payoff rules.
+
+The term sheet ran to twenty pages. The pricing was a handful of
+reusable components assembled in a different order. That modularity
+is exactly why those C++ libraries became such serious pieces of
+software — and why the same code that priced a range accrual in
+2004 could price something nobody had named yet in 2006.
+
+It also explains the trader's question. If you can only describe
+your product as a payoff, you don't know why anyone bought it. If
+you can describe it as a view, you do.
