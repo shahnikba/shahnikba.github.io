@@ -1,0 +1,146 @@
+---
+slug: cox-proportional-hazards
+title: The cancellation
+date: 2021-03-14
+summary: Cox's 1972 model estimates covariate effects on a hazard without ever writing down the hazard, and the argument that justified it arrived a decade after the answer.
+meta: Survival analysis · notes
+---
+
+Time-to-event data breaks ordinary regression in two places. The response is a
+duration, so it is positive and skewed, and the natural object to model is not
+its mean but its instantaneous risk of ending,
+
+$$
+\lambda(t \mid x) \;=\; \lim_{h\downarrow 0}\frac{1}{h}\,
+\mathbb{P}\!\left(t \le T < t+h \;\middle|\; T \ge t,\; x\right).
+$$
+
+Worse, some of the durations are not observed at all. A subject who leaves the
+study still alive, or a loan still performing when the sample ends, tells you
+only that $T$ exceeds some censoring time. Discard those observations and the
+sample is biased towards short survivals; keep them and there is nothing to
+regress on. Cox's 1972 paper resolves both difficulties with a single
+manoeuvre.
+
+## Refusing to name the baseline
+
+The model is
+
+$$
+\lambda(t \mid x) \;=\; \lambda_0(t)\,e^{x^{\top}\beta},
+$$
+
+a factorisation that puts everything depending on time into $\lambda_0$ and
+everything depending on covariates into the exponential. The hazard ratio
+between two subjects is $e^{(x_i - x_j)^{\top}\beta}$, constant in $t$: that
+proportionality is the model's only structural claim, and everything else is
+left free.
+
+Free in a strong sense. $\lambda_0$ is not a parameterised curve with a few
+unknowns; it is an arbitrary non-negative function, an infinite-dimensional
+nuisance parameter sitting inside the likelihood one would like to maximise.
+Maximising over it directly does not work — an unrestricted $\lambda_0$
+collapses onto atoms at the observed failure times and drags $\beta$ with it.
+
+## The cancellation
+
+Order the distinct failure times $t_1 < \dots < t_k$ and let $R(t_i)$ be the
+risk set, the subjects still under observation and still event-free just before
+$t_i$. Rather than asking how likely the observed durations were, ask a much
+smaller question: given that exactly one failure occurred at $t_i$, and given
+who was available to fail, which of them was it? Under the model that
+probability is
+
+$$
+\frac{\lambda_0(t_i)\,e^{x_i^{\top}\beta}}
+     {\sum_{j \in R(t_i)} \lambda_0(t_i)\,e^{x_j^{\top}\beta}}
+\;=\;
+\frac{e^{x_i^{\top}\beta}}{\sum_{j \in R(t_i)} e^{x_j^{\top}\beta}},
+$$
+
+and the baseline hazard, common to numerator and denominator, is gone. Taking
+the product over failure times gives the partial likelihood
+
+$$
+L(\beta) \;=\; \prod_{i=1}^{k}
+\frac{e^{x_i^{\top}\beta}}{\sum_{j \in R(t_i)} e^{x_j^{\top}\beta}},
+$$
+
+in which $\lambda_0$ does not appear anywhere. That is the whole of the trick,
+and it pays for two more things without being asked.
+
+Censored subjects are handled by arithmetic rather than by assumption. A
+subject censored at $c$ belongs to every risk set before $c$ and none after; it
+contributes no factor of its own but constrains everyone else's denominators
+for as long as it was genuinely at risk. Nothing about the censoring mechanism
+needs modelling beyond its being uninformative about the failure.
+
+And only the ordering of the event times enters. Apply any increasing
+transformation to the time axis and $L$ is unchanged, because risk sets are
+unchanged. The estimator is a rank statistic wearing a regression's clothes,
+which is why it survives a badly chosen time scale.
+
+## A likelihood that is not one
+
+Differentiating gives a score of striking form,
+
+$$
+U(\beta) \;=\; \sum_{i=1}^{k}\bigl(x_i - \bar{x}(\beta, t_i)\bigr),
+\qquad
+\bar{x}(\beta,t) \;=\;
+\frac{\sum_{j \in R(t)} x_j e^{x_j^{\top}\beta}}
+     {\sum_{j \in R(t)} e^{x_j^{\top}\beta}},
+$$
+
+observed covariate minus its risk-set expectation, accumulated over events.
+
+But $L$ is not the probability of anything. Its factors condition on
+overlapping events, and the terms carrying information about the spacing of
+failures have been deliberately thrown away. Cox called it a conditional
+likelihood in 1972; the discussion following the paper at the Royal Statistical
+Society disputed the name, and he returned to it in 1975 to define partial
+likelihood properly. The rigorous asymptotics came later still, from Tsiatis
+and from Andersen and Gill, who wrote each subject's event history as a
+counting process $N_i$ with intensity $Y_i(t)\lambda_0(t)e^{x_i^{\top}\beta}$
+and observed that $U(\beta)$ is a stochastic integral against the compensated
+martingales $M_i = N_i - \int Y_i \lambda$. At the true $\beta$ the score is
+therefore a martingale with mean zero, and the martingale central limit theorem
+delivers normality with the observed information as variance. The usual
+likelihood apparatus applies — for a reason that has nothing to do with
+likelihood.
+
+The one place the construction shows strain is ties. The derivation assumes
+continuous time and so at most one failure per instant, while data arrive
+rounded to the day or the month. The exact treatment sums over all orderings
+consistent with the observed ties and is combinatorially expensive; Breslow's
+approximation reuses one denominator for the whole tied block, and Efron's
+discounts it as the block is consumed. Efron's is nearly always the right
+default and almost never the reported one.
+
+## The same man's other process
+
+A hazard is the intensity of a point process, and a proportional-hazards
+regression is a statement that the intensity factorises into a common shape and
+an exponential loading on state. Reduced-form credit modelling makes exactly
+that statement, with the default time as the first jump of a doubly stochastic
+Poisson process whose intensity is driven by observable factors — a
+construction named, for the same author's earlier work on the object, a Cox
+process. The two literatures differ mainly in ambition. Survival analysis
+estimates the loading and refuses to name the baseline; credit pricing
+specifies the baseline as a diffusion and calibrates it to spreads, because it
+needs to price rather than to test. It is worth knowing that the honest version
+of the problem, the one that admits it cannot see the baseline, still yields a
+consistent estimate of everything that varies across names.
+
+## Sources
+
+- D. R. Cox, *Regression models and life-tables* (with discussion), Journal of
+  the Royal Statistical Society, Series B **34** (1972), 187–220.
+- D. R. Cox, *Partial likelihood*, Biometrika **62** (1975), 269–276.
+- P. K. Andersen and R. D. Gill, *Cox's regression model for counting
+  processes: a large sample study*, Annals of Statistics **10** (1982),
+  1100–1120.
+- B. Efron, *The efficiency of Cox's likelihood function for censored data*,
+  Journal of the American Statistical Association **72** (1977), 557–565.
+- D. Lando, *On Cox processes and credit risky securities*, Review of
+  Derivatives Research **2** (1998), 99–120.
