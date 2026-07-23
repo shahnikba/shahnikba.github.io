@@ -1,0 +1,109 @@
+---
+slug: avellaneda-stoikov
+title: The Avellaneda–Stoikov derivation
+date: 2013-01-15
+summary: Where the HJB equation comes from, and why the famous closed forms are approximations.
+meta: Market microstructure · notes
+---
+
+## The state and the wager
+
+A market maker's position at time $t$ is three numbers: cash $x$,
+inventory $q$, and the mid-price $S$. Everything else — quotes, fills,
+the drift of the book — is machinery for moving between such triples.
+The objective is expected utility of terminal wealth marked at the mid,
+so the value function is
+
+$$
+V(x,q,S,t) = \sup_{\delta^a,\delta^b}\ \mathbb{E}_t\!\left[-e^{-\gamma(X_T + q_T S_T)}\right].
+$$
+
+The exponential utility is not decoration. It is what makes the problem
+tractable later, and it is also an honest statement of what a market
+maker dislikes: not variance of returns as such, but ending the session
+holding inventory that has moved against him.
+
+## One instant of trading
+
+Over an interval $dt$ only three things can happen. With probability
+$\lambda^a\, dt$ the ask is lifted: cash becomes $x + S + \delta^a$ and
+inventory falls to $q - 1$. With probability $\lambda^b\, dt$ the bid
+is hit: cash becomes $x - S + \delta^b$ and inventory rises to
+$q + 1$. Otherwise nothing trades and only the price moves. Bellman's
+principle says today's value equals the expected value one instant
+later, which is that three-way average weighted by those probabilities.
+
+## From expectation to equation
+
+Between fills the mid diffuses, $dS = \sigma\, dW$, so Itô's lemma
+applied to the no-trade branch gives
+$V + V_t\, dt + \tfrac{1}{2}\sigma^2 V_{SS}\, dt$ once
+$\mathbb{E}[dS] = 0$ and $(dS)^2 = \sigma^2\, dt$ are used. The
+execution branches admit no such expansion: inventory jumps by a whole
+unit, the state moves discontinuously, and what enters is a difference
+in value rather than a derivative. Cancelling $V$ and dividing by $dt$
+leaves
+
+$$
+0 = V_t + \tfrac{1}{2}\sigma^2 V_{SS} + \lambda^a (V_a - V) + \lambda^b (V_b - V).
+$$
+
+The maximisation enters because the intensities are ours to set:
+$\lambda^a = A e^{-k \delta^a}$ and $\lambda^b = A e^{-k \delta^b}$.
+Quoting tighter buys flow at the cost of edge, so
+
+$$
+0 = V_t + \tfrac{1}{2}\sigma^2 V_{SS} + \max_{\delta^a} \lambda^a (V_a - V) + \max_{\delta^b} \lambda^b (V_b - V).
+$$
+
+Each execution term reads as probability of a fill times the gain in
+continuation value from landing in the post-fill state. Selling is
+worth doing when it moves inventory towards where you want it, not
+because a sale is intrinsically good.
+
+## Why exponential utility collapses the problem
+
+As written this is a PDE in cash, inventory, price and time. What
+rescues it is the ansatz
+
+$$
+V(x, q, S, t) = -e^{-\gamma (x + qS)}\, v(q, t).
+$$
+
+Cash and price enter the utility only through the mark-to-market
+$x + qS$, so they factor out almost entirely, leaving a system of
+ordinary differential equations in $t$ indexed by integer inventory.
+A further substitution $v = u^{-\gamma / k}$ linearises that system.
+Four dimensions become one, plus a counter.
+
+## What the closed form is, and what it is not
+
+From the reduced problem, and only after an asymptotic expansion valid
+for moderate inventory, come the two expressions everyone quotes: the
+reservation price
+
+$$
+r = S - q \gamma \sigma^2 (T - t),
+$$
+
+and the optimal total spread
+
+$$
+\delta^a + \delta^b = \gamma \sigma^2 (T - t) + \frac{2}{\gamma}\, \ln\!\left(1 + \frac{\gamma}{k}\right).
+$$
+
+These are approximations derived from the HJB, not exact solutions of
+the control problem, and the distinction matters in practice: the
+skew term grows without bound in $q$, so the approximation degrades
+exactly where inventory is large and the quoting decision is most
+consequential. Guéant, Lehalle and Fernandez-Tapia later solved the
+problem more generally, with inventory bounds, and characterised
+where the original approximation holds and where it starts to drift.
+
+## Sources
+
+- Avellaneda, M. and Stoikov, S. (2008). *High-frequency trading in a
+  limit order book.* **Quantitative Finance** 8(3).
+- Guéant, O., Lehalle, C.-A. and Fernandez-Tapia, J. (2013). *Dealing
+  with the inventory risk: a solution to the market making problem.*
+  **Mathematics and Financial Economics** 7(4).
