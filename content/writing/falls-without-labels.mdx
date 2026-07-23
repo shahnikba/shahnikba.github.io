@@ -1,0 +1,108 @@
+---
+slug: falls-without-labels
+title: Falls without labels
+date: 2019-01-14
+summary: Thirty confirmed events against ten million windows is not a hard classification problem — it is the wrong problem.
+meta: Anomaly detection · notes
+---
+
+A wearable that watches for falls has a data problem before it has a
+modelling problem. Continuous accelerometry from a deployed cohort produces
+something on the order of ten million two-second windows in a year; the
+number of clinically confirmed falls in that same year is thirty. At a
+positive rate near $10^{-6}$, [supervised
+classification](/writing/learning-from-thirty-falls/) is not difficult so
+much as ill-posed. Thirty examples cannot support a decision boundary over a
+space that size, and every resampling trick that makes the training set look
+balanced makes the deployment distribution look like a fiction.
+
+The move that makes it tractable is to stop asking what a fall looks like.
+Supervised detection needs positives. Density estimation asks what normal
+looks like and whether a given window sits in the tail, and it needs only the
+negatives, of which there are millions of hours. That exploits the exact
+asymmetry in the data, and it buys something a classifier structurally cannot
+have: generalisation to event types never observed. A model trained on thirty
+forward falls onto hard floors learns forward falls onto hard floors. A
+density over normal movement flags a backward fall onto carpet without having
+seen one, because it was never asking about falls.
+
+## Why the density model does not ship alone
+
+It solves the label problem and creates a specificity problem. The model
+flags everything unusual: a dropped handset, a car journey, an unusually
+vigorous afternoon in the garden, a grandchild playing with the device, the
+sensor left running on top of a washing machine. All genuinely improbable
+under $p(x)$; none clinically meaningful. Precision collapses, and precision
+is the product — a detector that cries wolf daily is ignored by carers inside
+a week.
+
+What ships is a cascade, and the cascade is what rescues the thirty labels.
+Against ten million windows they were hopeless. Against a couple of hundred
+pre-screened candidates the discrimination problem is four or five orders of
+magnitude smaller, and thirty examples starts to be a workable training set —
+particularly because the screen has already handed over the hard negatives,
+the windows that look like falls and aren't. Random negatives teach a
+classifier nothing. These teach it everything. The screen doubles as an
+active-learning loop: it decides which two hundred windows are worth a
+clinician's afternoon, which is how thirty labels become three hundred
+without anyone reviewing a year of continuous signal.
+
+## Point anomalies and drift are different problems
+
+Falls are point anomalies — a single window, low likelihood, a threshold on
+$\log p(x)$. Deterioration is not. Nothing is anomalous in any individual
+window; activity level, sleep fragmentation and gait speed shift over weeks.
+Per-window thresholding will never see it. That is a comparison of
+$p_{\text{recent}}$ against $p_{\text{baseline}}$: a divergence problem, or
+better, a sequential change-point one.
+
+The natural instrument is CUSUM on the log-likelihood stream, accumulating
+$S_t = \max(0,\, S_{t-1} + \ell_t - k)$ and alarming when it crosses $h$, with
+$h$ tuned to a target average run length under the null. That gives a
+false-alarm rate specified by design, denominated in patient-days between
+alarms rather than in an abstract rate. It is the same machinery as
+regime-change detection on a returns series, which is a pleasant thing to
+notice if one has spent time on both.
+
+## Conditioning, or you have built a clock
+
+An unconditional density will flag vigorous movement at three in the morning.
+That is wrong for a night-shift worker, and wrong for the patient who always
+gets up at three, and it means a great deal of compute has been spent
+building a circadian rhythm detector. What is wanted is
+$p(x \mid \text{context})$: time of day, day of week, activity state, device
+and wear position, and a patient embedding. The embedding is the one that
+matters, because it gives a personalised baseline. A frail 85-year-old and an
+active 65-year-old have quite different normal distributions, and a shared
+threshold quietly trades sensitivity in one group against false alarms in the
+other. That is an equity property as much as a statistical one.
+
+## Stillness scores as maximally normal
+
+Likelihood in high dimensions tracks complexity as much as familiarity.
+Smooth, low-entropy inputs are assigned high density by most density models,
+and in accelerometry the lowest-complexity signal available is stillness — a
+handset lying on a table. Now recall the fall signature: freefall, impact,
+then prolonged post-impact stillness. The single most alarming segment in the
+record, an elderly person motionless on the floor for twenty minutes, is
+exactly the segment a naive likelihood model calls normal. The blind spot
+sits precisely where the need is greatest.
+
+The mitigations are typicality tests rather than raw density — asking whether
+$\log p(x)$ is near its expected value under the model, not merely high —
+likelihood ratios against a background model, a learned feature space rather
+than the raw signal, and modelling the transition structure rather than the
+marginal. Mostly, though, the mitigation is knowing the trap is there. Most
+people meet it in production.
+
+## Evaluating on thirty events
+
+Sensitivity cannot be estimated precisely from thirty positives and it is
+better not to pretend otherwise. Fix the alert budget first — one alert per
+patient-month, say — and report recall at that budget rather than ROC-AUC,
+which integrates over operating points nobody would ever ship. Bootstrap a
+confidence interval on the thirty and publish it; it will be wide, and saying
+so is a credibility signal rather than a weakness. Split by subject, always:
+gait is a biometric, and window-level splits leak identity into every number.
+And track calibration over time, because normal drifts — seasonally, with
+device upgrades, and as a cohort ages.
