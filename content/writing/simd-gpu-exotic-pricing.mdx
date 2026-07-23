@@ -1,0 +1,141 @@
+---
+slug: simd-gpu-exotic-pricing
+title: The bottleneck was never the model
+date: 2007-09-20
+summary: Profiling an exotic interest-rate library and finding that the expensive part was the arithmetic, not the mathematics.
+meta: Numerical methods · notes
+---
+
+Calibration and Monte Carlo valuation in our exotic rates library were getting
+slower, and the products responsible were the obvious ones: callable CMS
+structures, CMS spreads, Bermudan-style notes, anything with a payoff that had
+to be carried along a path rather than integrated in closed form. The instinct
+is to reach for a better numerical scheme, or to simplify the model until it
+fits the machine. The profiler suggested neither was the problem.
+
+## Where the time actually went
+
+A long-dated swap rate is not a difficult object. Under a one-factor short-rate
+model with affine discount factors it is
+
+$$
+S(t) = \frac{1 - P(t,T_n)}{\sum_i \alpha_i P(t,T_i)},
+\qquad
+P(t,T_i) = A(t,T_i)\,e^{-B(t,T_i)\,x_t}.
+$$
+
+The expression is elementary. Its cost is entirely in how often it is
+evaluated. A thirty-year annuity is a long sum, and every term in it is an
+exponential. A CMS spread wants two such rates. A [callable
+structure](/writing/local-vol-callable-cms/) wants them again at every exercise
+opportunity, on every path. Calibration then reprices the whole instrument set
+a few hundred times while the optimiser moves the parameters around.
+
+Multiply those out and the floating-point count is enormous, but it is
+enormous in a very particular way: the same short calculation, repeated over
+data that does not interact. The algorithm was already parallel. The hardware
+was simply not being asked to exploit it.
+
+## Four discount factors at a time
+
+The first direction was Intel's SIMD instructions. An SSE register holds four
+single-precision values, so the product $-B_i x_i$ can be formed four elements
+at a time rather than one:
+
+```asm
+movaps  xmm0,[B]
+movaps  xmm1,[x]
+mulps   xmm0,xmm1
+```
+
+The exponential is not a hardware instruction, so it becomes a polynomial
+approximation evaluated in the same vector form — a few multiply-adds across
+the register instead of a library call per element. That gets applied wherever
+the library spends its time: discount factor generation, annuity accumulation,
+the CMS rate itself, and the final discounting of cashflows.
+
+Four at a time means single precision, and that is not a free choice when the
+object being accumulated is a thirty-year annuity. The individual discount
+factors have headroom to spare; the sum is where the significant digits go. It
+is the one part of the vectorised path that has to be watched rather than
+assumed.
+
+The harder change was not the arithmetic but the storage. A pricing library
+written in the natural object-oriented way keeps one structure per path, with
+the model factors and the discount factor as fields inside it. Vector
+instructions want the opposite arrangement — one array per quantity, with the
+paths running along it:
+
+```cpp
+struct Path { float factor1, factor2, discount; };   // one path, three fields
+
+float factor1[nPaths], factor2[nPaths], discount[nPaths];   // one field, many paths
+```
+
+Nothing about the mathematics changes. What changes is the arrangement of the
+numbers relative to the machine that has to read them, which turns out to be a
+modelling decision in its own right.
+
+## One thread, one path
+
+Working through the SIMD version made the more interesting observation
+unavoidable. Monte Carlo paths do not talk to each other. The only step that
+requires communication is the aggregation of discounted payoffs at the very
+end. Four-wide vectors were a small answer to a question that was much larger
+than four.
+
+NVIDIA's CUDA release makes that addressable in a way it was not a year ago.
+The device can now be programmed in something close to C, rather than by
+disguising the calculation as a shader and reading the answer back out of a
+texture, and the mapping is almost embarrassingly direct: one thread per path,
+one block per group of paths, one grid per simulation.
+
+```cpp
+__global__ void PriceKernel(float *state, float *payoff, ModelParameters model)
+{
+    int path = blockIdx.x * blockDim.x + threadIdx.x;
+    if (path >= model.paths) return;
+
+    SimulatePath(path, state, model);
+
+    payoff[path] = fmaxf(CalculateCMS(path, 30) - CalculateCMS(path, 20), 0.0f);
+}
+```
+
+launched from the host with `PriceKernel<<<blocks, threads>>>` at 256 threads
+to a block. The syntax is not the point. The point is that thousands of
+independent valuations now run at once, and the pricing code inside the kernel
+is the same pricing code as before.
+
+The precision question does not come up again, because the current devices
+settle it: they are single precision only. The decision made deliberately for
+the SSE work is made for us here, which is a reason to have got the annuity
+accumulation right the first time rather than a reason to relax about it.
+
+What did have to change was everything around it. Transfers across the bus are
+expensive enough to dominate the calculation if you let them, so model
+parameters stay resident on the device, intermediate results never come back,
+memory access patterns get reorganised around the warp rather than around the
+programmer, and synchronisation is removed wherever it is not load-bearing. The
+algorithm was untouched; only the execution architecture moved.
+
+## Where the gain landed
+
+Calibration is where this pays. Each step chooses parameters, reprices the
+instrument set, compares against market, and updates — so any improvement in
+the pricing engine is multiplied by the number of iterations the optimiser
+needs. Taken together, the SIMD work and the GPU port gave roughly a fivefold
+improvement in calibration time and somewhere between five and ten times on
+Monte Carlo pricing, depending on the product. The largest gains were exactly
+where the pain had been: long maturities, many exercise dates, CMS-dependent
+coupons, large path counts.
+
+What this changes is the first question. Faced with a product that is too slow
+to price, the trained response is to ask for a better model. For most of these
+structures the models are already sophisticated enough — the binding
+constraint is evaluating them inside a calibration loop that has to converge
+before the market moves. If that holds beyond this library, then the job is
+going to want stochastic modelling, numerical analysis and a working knowledge
+of the machine in the same person, and the third of those is currently treated
+on most desks as somebody else's problem. The mathematics defines the model.
+The implementation decides whether anyone can actually use it.
