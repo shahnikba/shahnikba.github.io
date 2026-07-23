@@ -1,0 +1,204 @@
+---
+slug: order-flow-and-price-discovery
+title: Prices made out of trades
+date: 2013-03-15
+summary: Hasbrouck's empirical microstructure — what a dealer can actually estimate from the tape, and what the estimate is for.
+meta: Market microstructure · notes
+---
+
+The classical account has prices move because value moves, and trading as the
+mechanism by which the move is registered. Microstructure inverts the order of
+explanation. There is no observable value; there is a sequence of orders, and
+the price is whatever the mechanism produces from them. For anyone quoting a
+currency pair electronically this is not a philosophical preference. The
+dealer's information set is exactly the message stream — limit orders, market
+orders, cancellations, sizes, timestamps — and every quoting decision is an
+inference from it.
+
+Hasbrouck's *Empirical Market Microstructure* is the book that makes that
+inference statistical. It contains almost no stochastic calculus and very few
+options. What it has instead is a series of models simple enough to be fitted
+to transaction data, each one designed to recover a quantity a dealer actually
+needs: how much of the spread is compensation for being picked off, how much of
+a price move will persist, how much information a given trade carried.
+
+## The signed trade as the primitive
+
+Everything begins with signing the tape. Write
+
+$$
+q_t=\begin{cases}+1 & \text{buyer-initiated}\\[2pt] -1 & \text{seller-initiated}\end{cases}
+\qquad\text{or, size-weighted,}\qquad x_t = q_t V_t .
+$$
+
+Roll's model is the cleanest demonstration that this variable alone carries
+structure. Let the efficient price be a random walk, $m_t = m_{t-1} +
+\varepsilon_t$, and let transactions occur at a fixed half-spread either side,
+
+$$
+p_t = m_t + c\,q_t ,
+$$
+
+with $q_t$ serially independent and independent of $\varepsilon$. Then
+
+$$
+\Delta p_t = c\,(q_t-q_{t-1}) + \varepsilon_t ,
+$$
+
+and the first autocovariance of returns is
+
+$$
+\gamma_1 = \operatorname{Cov}(\Delta p_t,\Delta p_{t-1}) = -c^2 ,
+$$
+
+so the effective spread is $2c = 2\sqrt{-\gamma_1}$. The bid–offer is
+recoverable from a price series in which no quote was ever recorded. Bounce
+between the two sides of the book induces negative autocorrelation, and the
+magnitude of that autocorrelation is the cost of crossing. It is a small
+result, and it sets the pattern for the rest of the book: choose a structural
+story, derive its signature in a second moment, invert.
+
+## Decomposing the spread
+
+The spread is not zero, and Roll's $c$ does not say why. Three costs sit inside
+it. Order processing — servers, connectivity, the exchange's fees — is real but
+static and, by the early 2010s, small. Inventory cost is the price of holding
+what the flow has left you with: after a run of client buying you are long EUR
+against USD, and rather than quoting symmetrically you shade both sides down,
+discouraging further buyers and paying up for sellers. That is the reservation
+price of the [Avellaneda–Stoikov problem](/writing/avellaneda-stoikov/),
+arrived at from the empirical side.
+
+The third is the dangerous one. In the Glosten–Milgrom account the dealer quotes
+without regret, meaning each side is a conditional expectation given the trade
+it would attract:
+
+$$
+a_t = \mathbb{E}\!\left[V \mid \mathcal{F}_{t-1}, \text{buy at } t\right],
+\qquad
+b_t = \mathbb{E}\!\left[V \mid \mathcal{F}_{t-1}, \text{sell at } t\right].
+$$
+
+Since a buy is evidence of good news and a sale evidence of bad, $a_t > b_t$
+even with no processing cost, no inventory, and a risk-neutral dealer. The
+spread exists because trading is informative. A dealer who quotes inside it is
+not being competitive; he is subsidising whoever knows more.
+
+Adverse selection also separates cleanly from the transitory costs in the
+second moments. Let the efficient price now update on trade innovations,
+
+$$
+m_t = m_{t-1} + \lambda\,q_t + \varepsilon_t ,\qquad p_t = m_t + c\,q_t ,
+$$
+
+so that
+
+$$
+\Delta p_t = (\lambda + c)\,q_t - c\,q_{t-1} + \varepsilon_t .
+$$
+
+The half-spread is $\lambda + c$, the return autocovariance is $\gamma_1 =
+-c(\lambda+c)$, and the two parameters are identified from the variance and
+first autocovariance of returns together. The ratio $\lambda/(\lambda+c)$ is the
+fraction of the half-spread that is pure information cost — the part that
+cannot be competed away, because widening it is the only defence against being
+run over.
+
+## Impact that persists and impact that does not
+
+The same $\lambda$ is Kyle's. In the single-period model with terminal value
+$v \sim N(p_0,\Sigma_0)$ and uninformed order flow $u \sim N(0,\sigma_u^2)$, the
+market maker's equilibrium pricing rule is linear in total order flow,
+$\Delta p = \lambda\,x$, with
+
+$$
+\lambda = \frac{1}{2}\,\frac{\sqrt{\Sigma_0}}{\sigma_u} .
+$$
+
+Depth $1/\lambda$ falls as the informed trader's advantage grows and rises with
+the volume of trade that carries no information at all. Read as an operating
+instruction: when estimated $\lambda$ rises, quote smaller and wider, because
+the same clip is now moving the market further and the move is more likely to be
+against you.
+
+The distinction that matters on a desk is not size of impact but persistence.
+Decompose the transaction price into a martingale and a stationary residual,
+
+$$
+p_t = m_t + s_t ,\qquad m_t = m_{t-1} + w_t ,
+$$
+
+where $m_t$ is the efficient price and $s_t$ the pricing error. Impact routed
+through $w_t$ is permanent: the market has revised its view and the level will
+not come back. Impact routed through $s_t$ is transitory: liquidity was consumed
+and will be replenished, and the price reverts as it is. A dealer filled against
+temporary impact has earned the spread on a position that mean-reverts into
+profit. A dealer filled against permanent impact has sold something that is
+about to be worth more. The variance $\sigma_w^2$ measures how much information
+the session produced; the dispersion of $s_t$ measures how far the mechanism
+strayed from it.
+
+## Measuring what a trade knew
+
+Serially independent $q_t$ is a fiction — large orders are split, and signed
+flow is strongly autocorrelated at every horizon anyone has looked at. Hasbrouck's
+answer is a bivariate vector autoregression in quote revisions $r_t$ and signed
+trades $x_t$,
+
+$$
+r_t = \sum_{i\ge 1} a_i\,r_{t-i} + \sum_{i\ge 0} b_i\,x_{t-i} + v_{1,t},
+\qquad
+x_t = \sum_{i\ge 1} c_i\,r_{t-i} + \sum_{i\ge 1} d_i\,x_{t-i} + v_{2,t}.
+$$
+
+The asymmetry in the summation limits is the identifying assumption: a trade may
+move the quote within the same interval, a quote may not move the trade that
+preceded it. What is then interesting is not any single coefficient but the
+cumulative impulse response of returns to a trade innovation,
+
+$$
+\alpha = \lim_{n\to\infty}\ \mathbb{E}\!\left[\sum_{i=0}^{n} r_{t+i}\ \middle|\ v_{2,t}\right],
+$$
+
+which is the permanent price revision attributable to an unexpected trade, net of
+everything the flow itself had already made predictable. This is the quantity
+worth calling the information content of a trade, and it is why a hundred
+thousand of retail flow and two hundred million from a fund that trades once a
+month are not comparable objects. The same machinery splits $\sigma_w^2$ into a
+trade-correlated part and a residual: the first is price discovery happening
+through the book, the second is public news arriving over the top of it.
+
+## What this was for, in 2013
+
+On EBS, Reuters Matching and Hotspot the quoting problem had stopped being the
+construction of a rate from an interbank mid and become the continuous
+interpretation of a message stream. The loop that resulted was an estimation
+problem wrapped around a control problem: infer fair value from recent quotes,
+measure signed flow, mark inventory, estimate the current adverse-selection
+intensity and the current $\lambda$, and only then solve for bid and ask. The
+first five steps are Hasbrouck. The last is Avellaneda–Stoikov. Neither is much
+use without the other — one says what should be measured, the other what to do
+once it has been.
+
+The reason this mattered in currencies specifically was Evans and Lyons, who
+found that daily exchange rate variation was explained substantially better by
+cumulated interdealer order flow than by contemporaneous macroeconomic news.
+For a market whose textbook account was entirely about interest differentials
+and announcements, that was a considerable result, and it made the microstructure
+programme the natural framework for FX rather than an equities import.
+
+Everything since has been refinement of the same primitive. Order-book
+imbalance, signed volume, queue imbalance, trade intensity, VPIN, cumulative
+flow: these are functions of $q_t$ and its history, and whether they are consumed
+by a linear model or a network changes the estimator without changing what is
+being estimated. The features have outlived the models that first justified
+them, which is the usual sign that the framing was right.
+
+## Sources
+
+- Hasbrouck, J. (2007), *Empirical Market Microstructure*, Oxford University Press.
+- Roll, R. (1984), *A simple implicit measure of the effective bid–ask spread in an efficient market*, Journal of Finance 39(4).
+- Glosten, L. and Milgrom, P. (1985), *Bid, ask and transaction prices in a specialist market with heterogeneously informed traders*, Journal of Financial Economics 14(1).
+- Kyle, A. (1985), *Continuous auctions and insider trading*, Econometrica 53(6).
+- Hasbrouck, J. (1991), *Measuring the information content of stock trades*, Journal of Finance 46(1).
+- Evans, M. and Lyons, R. (2002), *Order flow and exchange rate dynamics*, Journal of Political Economy 110(1).
