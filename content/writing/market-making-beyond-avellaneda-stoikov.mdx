@@ -1,0 +1,102 @@
+---
+slug: market-making-beyond-avellaneda-stoikov
+title: What the later market-making literature gives a desk
+date: 2014-06-15
+summary: Bounded inventory, clock-free quotes and realistic fill curves — the parts of Guéant's framework that change what you actually quote.
+meta: Market microstructure · notes
+---
+
+The Avellaneda–Stoikov formulas are the first thing anyone implements, and
+[the derivation](/writing/avellaneda-stoikov/) is worth doing once by hand.
+But they carry two defects that surface on the first day of live quoting. The
+skew term $q\gamma\sigma^2(T-t)$ is linear in inventory and unbounded, so it
+says nothing sensible about approaching a position limit. And everything
+depends on a terminal time $T$ that a continuously quoting desk does not have.
+
+The literature that followed — Guéant with Lehalle and Fernandez-Tapia, then
+the book — repairs both. Most of that work is machinery for making the results
+provable: verification theorems, admissibility, the construction of a point
+process whose intensity a predictable control may legitimately alter. None of
+it changes a quote. Three parts do.
+
+## Inventory limits change what you ship
+
+Impose $|q| \le Q$ — every desk has a cap anyway — and the infinite family of
+coupled nonlinear ODEs indexed by inventory becomes a finite system of $2Q+1$
+equations. The substitution $v = u^{-\gamma/k}$ then makes that system linear,
+
+$$
+u'(t) = A\,u(t),
+$$
+
+with $A$ tridiagonal: the diagonal quadratic in $q$, the off-diagonals
+constant. Solve it once offline and what you ship is a table of bid and ask
+quotes indexed by inventory level, not a formula evaluated per tick. That is a
+different object, and it is what desks actually run.
+
+The behaviour near the cap is also qualitatively right, which the original is
+not. Approaching the limit, the correct response is to go sharply asymmetric
+and eventually withdraw one side entirely at $q = \pm Q$ — not to keep adding
+another $\gamma\sigma^2(T-t)$ of skew per lot indefinitely.
+
+## Quotes without a clock
+
+As $T-t$ grows the solution converges, and the limiting quotes are read off the
+eigenvector associated with the extreme eigenvalue of $A$. The stationary
+policy is an eigenvector problem, and the horizon drops out of the answer
+altogether.
+
+This matters more than it sounds. The Avellaneda–Stoikov spread collapses as
+$t \to T$, which is an artefact of a problem posed with a liquidation deadline
+rather than anything about market making. Remove the deadline and you have
+constant quotes per inventory level: a policy you can leave running, instead of
+a formula you keep patching around the end of its own horizon.
+
+## The fill curve you actually observe
+
+The exponential intensity $\Lambda(\delta) = Ae^{-k\delta}$ is chosen because it
+makes the algebra collapse, not because order flow behaves that way.
+Empirically, fill probability against distance from the mid looks closer to a
+power law. This is not an academic complaint: $k$ is a parameter you estimate
+from your own fills, and fitting an exponential to power-law data biases your
+spread systematically in one direction.
+
+The framework survives a general decreasing intensity subject to a regularity
+condition, roughly $\Lambda\Lambda'' < 2(\Lambda')^2$, which is what guarantees
+the quote maximising the Hamiltonian is unique. Power-law shapes satisfy it. So
+you can calibrate to what your fills say rather than to what keeps the ODEs
+tractable.
+
+A related piece of practical relief: replacing exponential utility with a
+running inventory penalty $\phi\int q^2\,dt$ yields the same asymptotic quotes
+under a mapping between $\gamma$ and $\phi$. Nobody has intuition for a CARA
+parameter; $\phi$ can be set against a stated tolerance for inventory.
+
+## What the model still cannot see
+
+Both Avellaneda–Stoikov and everything built on it assume the mid is a
+martingale and that fills carry no information. Adverse selection is absent by
+construction. On a real book it is where the P&L goes, so the rigour buys you a
+correct answer to a model that omits the thing which hurts most.
+
+The multi-asset extension is the exception worth the effort — quoting a curve
+or a set of crosses, skewing against correlated inventory through a covariance
+matrix rather than treating each book separately is the highest-value result in
+this literature. It inherits the same blind spot.
+
+## Sources
+
+- Avellaneda, M. and Stoikov, S. (2008), *High-frequency trading in a limit
+  order book*, Quantitative Finance 8(3).
+- Guéant, O., Lehalle, C.-A. and Fernandez-Tapia, J. (2013), *Dealing with the
+  inventory risk: a solution to the market making problem*, Mathematics and
+  Financial Economics 7(4), 477–507.
+- Guéant, O., Lehalle, C.-A. and Fernandez-Tapia, J. (2012), *Optimal portfolio
+  liquidation with limit orders*, SIAM Journal on Financial Mathematics 3(1),
+  740–764.
+- Guéant, O. (2016), *The Financial Mathematics of Market Liquidity: From
+  Optimal Execution to Market Making*, CRC Press.
+- Guéant, O. (2017), *Optimal market making*, Applied Mathematical Finance
+  24(2), 112–154.
+- Bergault, P., Evangelista, D., Guéant, O. and Vieira, D. (2020), *Closed-form
+  approximations in multi-asset market making*.
