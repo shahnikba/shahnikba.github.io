@@ -1,0 +1,148 @@
+---
+slug: slv-leverage-function
+title: Two representations of the same measure
+date: 2007-06-01
+summary: Calibrating the leverage function of a stochastic-local volatility model reduces to a single conditional expectation; Monte Carlo and the Fokker–Planck solve differ only in how they carry the law.
+meta: Volatility · notes
+---
+
+Take the Heston stochastic-local volatility model,
+
+$$
+dS_t = \mu S_t\,dt + L(S_t,t)\sqrt{V_t}\,S_t\,dW^1_t,
+\qquad
+dV_t = \kappa(\theta - V_t)\,dt + \xi\sqrt{V_t}\,dW^2_t,
+$$
+
+with $dW^1_t\,dW^2_t = \rho\,dt$ and $(\kappa,\theta,\xi,\rho)$ already
+calibrated to the term structure of the smile dynamics. The only unknown
+left is the leverage function $L(S,t)$, and the whole of what the industry
+calls "SLV calibration" is the business of finding it.
+
+## The problem is one conditional expectation
+
+[Gyöngy's mimicking theorem](/writing/markovian-projection/) says there is a
+local volatility diffusion with the same one-dimensional marginals as the
+model above provided
+
+$$
+\sigma_{LV}^2(S,t) = \mathbb{E}\!\left[L^2(S_t,t)\,V_t \mid S_t = S\right].
+$$
+
+Because $L$ is a deterministic function of $S$ and $t$ it steps outside the
+expectation, and the calibration condition collapses to
+
+$$
+L^2(S,t) = \frac{\sigma_{LV}^2(S,t)}{m(S,t)},
+\qquad
+m(S,t) = \mathbb{E}[V_t \mid S_t = S].
+$$
+
+That is the entire problem. Dupire hands you $\sigma_{LV}$ from the market;
+everything else in the literature is machinery for computing one conditional
+expectation.
+
+It is not a closed-form computation, because $m$ is taken under the law of a
+process whose diffusion coefficient contains $L$. So $L$ determines $m$
+determines $L$: a nonlinear fixed point, solved by iterating from an initial
+guess — $L^{(0)} \equiv 1$ works — and marching forward in time, since
+$m(\cdot,t)$ only ever depends on the leverage function up to $t$.
+
+## Carrying the law as particles
+
+The first way to compute $m$ is to simulate. Run $N$ paths of
+$(S_t,V_t)$ under the current leverage function; at each maturity you hold a
+cloud of pairs $\{(S_i,V_i)\}$, which is to say the empirical measure
+
+$$
+\mu_N = \frac{1}{N}\sum_{i=1}^{N}\delta_{(S_i,V_i)}.
+$$
+
+The conditional expectation is then a regression problem. With a Gaussian
+kernel of bandwidth $h$,
+
+$$
+\widehat{m}(S) = \frac{\sum_i V_i\,K_h(S_i - S)}{\sum_i K_h(S_i - S)},
+$$
+
+and $L$ is updated as $\sigma_{LV}/\sqrt{\widehat{m}}$ before the next sweep.
+
+The appeal is that it needs nothing you do not already own. Any Monte Carlo
+engine that prices under the stochastic volatility model will do, and the
+recipe generalises to almost any choice of variance process. The cost is
+statistical: error decaying as $N^{-1/2}$, a bandwidth that trades bias
+against variance, and — worst of all — thin sampling in the wings, which is
+exactly where the leverage function is least well determined and most
+consequential for barriers.
+
+## Carrying the law as a density
+
+Ren, Madan and Qian make the opposite choice: represent the same law by its
+density $p(S,V,t)$, which satisfies the forward Kolmogorov equation
+$\partial_t p = \mathcal{L}^\ast p$, written out as
+
+$$
+\begin{aligned}
+\frac{\partial p}{\partial t} =\;
+&-\frac{\partial}{\partial S}(\mu S p)
+-\frac{\partial}{\partial V}\big(\kappa(\theta - V)p\big) \\
+&+\tfrac12 \frac{\partial^2}{\partial S^2}\big(L^2 V S^2 p\big)
++\frac{\partial^2}{\partial S\,\partial V}\big(\rho\xi L V S p\big)
++\tfrac12 \frac{\partial^2}{\partial V^2}\big(\xi^2 V p\big).
+\end{aligned}
+$$
+
+The nonlinearity is visible in the coefficients, but it is benign in
+practice: over a single time step $L$ is known from the step before, so each
+step is a linear parabolic solve and ADI handles it. From the density,
+
+$$
+m(S,t) = \frac{\int V p(S,V,t)\,dV}{\int p(S,V,t)\,dV},
+$$
+
+which is quadrature, not statistics. No kernel, no bandwidth, no estimator
+variance; the error is discretisation error in the mesh. What you pay for it
+is a two-dimensional grid at every step, awkward boundary treatment, and a
+variance grid that has to cope with the behaviour of the Heston density near
+the origin when the Feller condition is violated.
+
+## The same fixed point twice
+
+Both methods are the same map. Given $L$, both build the law
+$\mathbb{P}_L(S_t,V_t)$, both extract $\mathbb{E}[V_t\mid S_t = S]$, and both
+return $\sigma_{LV}/\sqrt{m}$. The only thing that differs is how the measure
+is carried between those steps — as a sum of point masses, or as a density on
+a grid. Choosing between them is not choosing an algorithm so much as
+choosing which error you would rather be responsible for: sampling error you
+can only beat down with paths, or mesh error you can beat down with
+refinement.
+
+That framing is worth holding on to, because it tells you what a genuinely
+new method would have to do. It would have to represent $\mathbb{P}_L$ some
+third way.
+
+---
+
+**Addendum, 2019.** Something did. Guyon and Henry-Labordère's particle
+method — circulated as a working paper and then published in *Risk* in
+January 2012, with the fuller treatment in *Nonlinear Option Pricing* —
+keeps the empirical measure but drops the independence of the paths. The
+conditional expectation estimated from the current cloud feeds straight back
+into the coefficients governing every path, so the system is a McKean–Vlasov
+interacting particle system rather than a set of independent trajectories,
+and the leverage function is built on the fly in a single forward pass
+instead of by repeated simulation to convergence. In the language above it is
+a third representation of $\mathbb{P}_L$, sitting between the empirical
+measure and the density: still particles, but self-consistent ones, and
+accurate at path counts the naive kernel scheme would find embarrassing. It
+is now the default in most production SLV calibrators I have seen. None of
+the section above changes; it simply acquires a third column.
+
+## Sources
+
+- I. Gyöngy, *Mimicking the one-dimensional marginal distributions of
+  processes having an Itô differential*, 1986.
+- Y. Ren, D. Madan and M. Qian, *Calibrating and pricing with embedded local
+  volatility models*, Risk, 2007.
+- J. Guyon and P. Henry-Labordère, *Being particular about calibration*,
+  Risk, January 2012 (added 2019).
