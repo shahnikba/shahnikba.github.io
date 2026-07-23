@@ -1,0 +1,111 @@
+---
+slug: learning-from-thirty-falls
+title: Learning from thirty falls
+date: 2018-12-16
+summary: Synthetic data for rare-event detection in wearable sensor streams, and why the deterministic baseline is harder to beat than it looks.
+meta: Applied ML · notes
+---
+
+## Thirty events
+
+A monitored elderly cohort might yield ten thousand patient-days of continuous
+accelerometry and, in all of it, perhaps thirty genuine falls. At window level
+the positive rate sits somewhere around $10^{-6}$, and three consequences
+follow immediately. Any classifier reaches 99.99% accuracy by predicting "no
+fall" forever. The model is determined by a few dozen examples, so variance
+dominates bias entirely. And cross-validation stops being informative: a
+five-fold split leaves six events per test fold, and the confidence interval on
+sensitivity spans most of the unit interval.
+
+The standard imbalance remedies do not survive contact with this. SMOTE
+interpolates linearly between neighbouring minority points in feature space,
+which for a time series is meaningless — the average of two falls is not a
+fall. It is a smeared waveform occupying a region of signal space no real body
+ever visits, and a classifier will learn to separate it from nothing at all,
+then report that it has learned something.
+
+## Symmetries you can prove
+
+Before reaching for anything adversarial there is a deterministic toolkit for
+inertial data, catalogued by Um and colleagues in their work on Parkinson's
+monitoring: jitter for sensor noise, scaling for amplitude variation between
+subjects, permutation of sub-sequences, time warping for movement speed,
+magnitude warping for non-uniform intensity, and rotation for device
+orientation.
+
+Rotation is the one that matters for phone-based sensing. Orientation in a
+pocket or on a wrist is genuinely arbitrary and the label is provably invariant
+to it, which is exactly the property a good augmentation needs: it should
+encode a symmetry the physics is known to have, not one you hope it has. Um et
+al. found rotation combined with permutation gave the largest gain. These
+methods are cheap, interpretable, and generally capture most of the benefit
+available.
+
+## What a generator does not know
+
+Deterministic transforms move you only along symmetry directions you have
+already thought of. They cannot invent a new kind of fall — backwards onto
+carpet when every observed event was forwards onto tile. A conditional
+generative model, in principle, learns the manifold and reaches modes you never
+sampled. The architectures worth trying are conditional GANs on raw windows,
+the recurrent conditional GAN of Esteban and colleagues, built for medical time
+series specifically, and DCGANs on spectrogram representations, which converts
+the problem into an image one where the machinery is far more mature.
+
+There is a circularity here that is easy to miss. To train a generator that
+produces falls you need enough falls to train the generator. With thirty events
+you cannot. The regime where this works is a few hundred to a few thousand
+positives — moderate scarcity, not the extreme case — and below that the
+technique simply is not available.
+
+The deeper problem is that a real fall has physics behind it. Acceleration
+magnitude collapses towards zero for three to six hundred milliseconds of
+near-freefall, then a sharp impact spike of several g, then near-zero variance
+for seconds or minutes, and the gravity vector ends up pointing somewhere it
+was not. A GAN optimises for indistinguishability under a learned discriminator
+that has no notion of any of this, and will cheerfully emit a trace that is
+spectrally plausible and physically impossible: an impact with no preceding
+freefall, a gravity vector that does not integrate consistently. Check the
+generated samples against those constraints explicitly, as a post-hoc filter or
+an auxiliary loss. Plotting a hundred synthetic traces beside real ones is
+worth more than any aggregate similarity score.
+
+## Measuring whether it worked
+
+Split by subject, never by window. Gait is a biometric; windows from one person
+leak across a random split and inflate everything downstream. Synthetic data
+enters the training fold and nothing else — obvious, and violated constantly,
+because the augmentation step usually sits before the split in the pipeline.
+
+Then train on synthetic and test on real. Fit a classifier purely on generated
+data, evaluate it on held-out real data, and compare against the
+real-train/real-test baseline. If the two approach each other the generator has
+captured something, and this is a far harder and more honest test than any
+distributional distance.
+
+Report the metrics that reflect what deployment costs. Not accuracy, not
+ROC-AUC, but precision-recall AUC and, above all, false alarms per
+patient-month. A detector with 95% sensitivity and one false alarm per user per
+day is unshippable; carers stop responding inside a week.
+
+## The unglamorous answer
+
+For falls specifically the highest-value approach is not generative at all.
+Recruit young volunteers, put down crash mats, run a scripted protocol across
+fall types, collect thousands of labelled events. Then treat the gap between
+simulated falls and real elderly falls as a domain adaptation problem. That is
+still adversarial machinery, but pointed at the transfer gap rather than at
+synthesis, and everything it operates on came out of a real body.
+
+The other direction worth watching is pretraining on the full unlabelled
+corpus, which is abundant in a way the positives never will be, and fine-tuning
+on the scarce events. Generative augmentation belongs in the moderate-data
+regime, validated by train-on-synthetic — and it should have to beat the
+rotation baseline before anything ships.
+
+## Sources
+
+- T. T. Um et al., *Data Augmentation of Wearable Sensor Data for Parkinson's
+  Disease Monitoring using Convolutional Neural Networks*, ICMI 2017.
+- C. Esteban, S. L. Hyland, G. Rätsch, *Real-valued (Medical) Time Series
+  Generation with Recurrent Conditional GANs*, 2017.
