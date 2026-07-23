@@ -1,0 +1,127 @@
+---
+slug: bayesian-cox
+title: Putting a posterior on the hazard ratio
+date: 2021-12-19
+summary: The Cox partial likelihood and MCMC solve unrelated problems, but survival questions with a decision at the end tend to need both.
+meta: Survival analysis · notes
+---
+
+Two tools that get taught apart and used together. [Cox](/writing/cox-proportional-hazards/)
+gives you a hazard ratio without ever committing to a shape for the baseline
+risk; MCMC gives you a posterior when the integral in Bayes' rule refuses to
+close. Neither needs the other. But the survival problems worth the trouble
+— sparse subgroups, covariates measured through a proxy, a decision waiting
+at the end — are the ones where fitting them together earns its cost.
+
+## The ranking argument inside Cox
+
+Cox models the hazard: the instantaneous risk of the event at time $t$,
+conditional on having survived to $t$.
+
+$$h(t \mid x) = h_0(t)\,\exp(\beta^\top x)$$
+
+The move that made it famous is leaving $h_0(t)$ unspecified. It is never
+estimated. Cox showed that $\beta$ can be recovered from the partial
+likelihood, which at each observed event asks only why *this* member of the
+risk set failed rather than one of the others still in it.
+
+$$L(\beta) = \prod_{i \,:\, \delta_i = 1} \frac{\exp(\beta^\top x_i)}{\sum_{j \in R(t_i)} \exp(\beta^\top x_j)}$$
+
+That is a ranking statement. It depends on the order of events, not their
+spacing, so the baseline cancels — parametric in the covariates,
+non-parametric in time. What comes out the other side is $\exp(\beta_k)$,
+the hazard ratio per unit of covariate $k$; in the sleep-onset work, the
+risk relative to the late-evening reference window. The price is
+proportionality, hazard ratios held constant over time, which is what
+Schoenfeld residuals exist to interrogate.
+
+## Sampling because the integral will not close
+
+MCMC answers a different question. Given a posterior
+
+$$p(\theta \mid D) = \frac{p(D \mid \theta)\,p(\theta)}{\int p(D \mid \theta)\,p(\theta)\,d\theta}$$
+
+the denominator is intractable in anything past a toy dimension. So you
+stop trying to write the posterior down and draw samples from it instead;
+any quantity you actually wanted — a mean, a credible interval, a tail
+probability — becomes a summary of the draws.
+
+The mechanism is a Markov chain whose stationary distribution is the
+posterior. Metropolis–Hastings does it in two lines: propose
+$\theta' \sim q(\cdot \mid \theta)$, accept with probability
+
+$$\alpha = \min\left(1, \frac{p(D \mid \theta')\,p(\theta')}{p(D \mid \theta)\,p(\theta)}\right)$$
+
+The normalising constant cancels in that ratio, and that cancellation is
+the entire trick. In code the whole accept step is four lines, worked in
+logs:
+
+```
+proposal = current + rng.normal(scale=PROPOSAL_SD)
+proposal_lp = log_posterior(proposal, x, t, event)
+if np.log(rng.uniform()) < proposal_lp - current_lp:
+    current, current_lp = proposal, proposal_lp
+```
+
+![Trace plot of a Metropolis–Hastings chain targeting the posterior of a log hazard ratio. The chain starts below the posterior mass, climbs during the first few hundred iterations, then mixes around the mode.](/figures/bayesian-cox-trace.svg)
+
+*Six thousand draws on a simulated cohort of 400 subjects, one covariate,
+true β = 0.80. Shaded region is the discarded burn-in; the dashed line is
+the posterior mean; the curve on the right is the marginal density of the
+retained draws. Code:
+[mh_partial_likelihood.py](https://github.com/shahnikba/shahnikba.github.io/blob/main/code/bayesian-cox/mh_partial_likelihood.py).*
+
+Everything the diagnostics care about is legible in that picture. Started
+deliberately at −1.2, well below the mass, the chain spends a few hundred
+iterations climbing before it settles — that early stretch is burn-in and
+gets thrown away. After it, the posterior mean is 0.794 with a 95%
+credible interval of (0.662, 0.925), which is a fair recovery of the truth.
+But of the 5,250 draws retained, the effective sample size is about 1,262.
+The chain is autocorrelated by construction, each state a small step from
+the last, so the nominal count flatters you by roughly a factor of four.
+That gap is what ESS reports and, across chains, what R-hat is watching.
+
+It is also the argument for better proposals. Modern practice uses
+Hamiltonian Monte Carlo and NUTS — Stan, PyMC, NumPyro — where the gradient
+of the log-posterior buys long, informed moves in place of the blind random
+walk above, and the same wall-clock budget returns far more independent
+information.
+
+## Where the two meet
+
+Standard Cox is frequentist: maximise the partial likelihood, invert the
+Hessian, read off standard errors. Going Bayesian means putting priors on
+$\beta$ and treating the partial likelihood as though it were a likelihood.
+That is not a fudge — it is a valid partial likelihood, and Sinha, Ibrahim
+and Chen (2003) give the argument — so you can sample
+$p(\beta \mid D) \propto L_{\text{partial}}(\beta)\,\pi(\beta)$ directly.
+The alternative is to stop hiding $h_0(t)$ and model it: piecewise-constant
+hazard, a gamma process, a B-spline log-hazard, then sample the joint
+posterior over $(\beta, h_0)$. That is what `brms`, `stan_surv` and any
+hand-rolled Stan model are doing.
+
+## When the posterior is worth the wait
+
+Sparse subgroups are the clearest case: a hierarchical prior shrinks
+small-cell estimates towards the group mean instead of reporting an
+implausible hazard ratio with an interval wide enough to drive through.
+Non-proportionality is the next — treating $\beta(t)$ as a smooth function
+needs a prior on smoothness, and the resulting posterior has no closed
+form. Frailty and site-level clustering integrate out cleanly by sampling.
+Competing risks give you a joint posterior over cause-specific hazards, and
+with it coherent uncertainty on the cumulative incidence functions.
+Measurement error matters more than it looks: accelerometer-derived sleep
+onset is a proxy, and a measurement-error layer propagates that into the
+hazard ratio rather than pretending the covariate is exact.
+
+The row that usually decides it, though, is decision-facing output. What
+you want is $P(\text{HR} > 1 \mid D)$, not a p-value, and that is read
+straight off the draws. Anything downstream — expected utility of an
+intervention, a threshold on an alerting rule — becomes a transformation of
+the samples rather than a delta-method approximation.
+
+The bill arrives in compute. A Cox fit on a cohort of a hundred thousand
+runs in seconds; the Bayesian version, recomputing the risk-set denominator
+at every event time on every iteration, runs for hours, because that
+denominator is $O(n)$. The usual escape is a piecewise-exponential
+reformulation as a Poisson regression, which HMC finds far more agreeable.
